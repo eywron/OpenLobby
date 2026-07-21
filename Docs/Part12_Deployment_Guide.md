@@ -6,76 +6,187 @@ Version: V1.0
 
 ---
 
-1. ARCHITECTURE & HOSTING OVERVIEW
+1. ARCHITECTURE OVERVIEW
 
-OpenLobby consists of three distinct layers in production:
-1. **Managed PostgreSQL Database** (Supabase, Neon, or Render PostgreSQL)
-2. **Backend Express API** (Render, Railway, or Azure App Service)
-3. **Frontend Next.js Application** (Vercel)
+OpenLobby deploys to the following services:
 
----
-
-2. STEP 1: MANAGED DATABASE SETUP (PostgreSQL)
-
-### Option A: Supabase (Recommended - Free Tier)
-1. Sign up at [supabase.com](https://supabase.com) and create a new project named `openlobby-db`.
-2. Set a strong database password and copy it.
-3. Once initialized, go to **Project Settings -> Database -> Connection String**.
-4. Copy the **URI** connection string:
-   `postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres`
-
-### Database Migration
-Run database migrations from your local environment or deployment pipeline:
-```bash
-cd backend
-npx prisma migrate dev --name init
-```
+- Frontend: Vercel (Next.js)
+- Backend: Azure App Service (Express + Node.js)
+- Database: Azure Database for PostgreSQL Flexible Server
+- Storage: Azure Blob Storage
+- Cache: Azure Cache for Redis
+- Email: Resend
 
 ---
 
-3. STEP 2: BACKEND DEPLOYMENT (Render / Railway)
+2. PREREQUISITES
 
-### Deploying on Render (Free Tier Supported)
-1. Log in to [render.com](https://render.com) and click **New + -> Web Service**.
-2. Connect your GitHub repository: `eywron/OpenLobby`.
-3. Configure the Web Service settings:
-   - **Name**: `openlobby-api`
-   - **Region**: Select closest to your users
-   - **Branch**: `main`
-   - **Root Directory**: `backend`
-   - **Runtime**: `Node`
-   - **Build Command**: `npm install && npm run build`
-   - **Start Command**: `npm run start`
-
-4. Environment Variables (Add under **Environment** tab):
-   - `NODE_ENV` = `production`
-   - `PORT` = `4000`
-   - `DATABASE_URL` = `postgresql://postgres:[PASSWORD]@[HOST]:5432/[DB]`
-   - `JWT_ACCESS_SECRET` = `[Generate 64-char random string]`
-   - `JWT_REFRESH_SECRET` = `[Generate 64-char random string]`
-   - `CORS_ORIGIN` = `https://openlobby.vercel.app` (your frontend domain)
-
-5. Click **Create Web Service**. Note the backend URL (e.g. `https://openlobby-api.onrender.com`).
+- Azure account with active subscription (Azure for Students supported)
+- Vercel account connected to GitHub
+- Resend account at resend.com
+- Azure CLI installed locally
+- Node.js 20+ and Git installed
+- Repository pushed to GitHub
 
 ---
 
-4. STEP 3: FRONTEND DEPLOYMENT (Vercel)
+3. AZURE RESOURCE GROUP
 
-1. Log in to [vercel.com](https://vercel.com) and click **Add New... -> Project**.
-2. Import `eywron/OpenLobby` from GitHub.
-3. Configure Project Settings:
-   - **Framework Preset**: `Next.js`
-   - **Root Directory**: Click Edit -> select `frontend`
-4. Environment Variables:
-   - `NEXT_PUBLIC_API_URL` = `https://openlobby-api.onrender.com/api/v1`
-5. Click **Deploy**. Vercel will build and assign your production domain (e.g. `https://openlobby.vercel.app`).
+Create a resource group to contain all Azure resources:
+
+az group create --name openlobby-rg --location eastus
 
 ---
 
-5. STEP 4: CORS & SECURITY VERIFICATION
+4. AZURE DATABASE FOR POSTGRESQL
 
-1. Update the `CORS_ORIGIN` environment variable on your backend (Render) to match your live Vercel domain (`https://openlobby.vercel.app`).
-2. Verify API status by visiting `https://openlobby-api.onrender.com/api/v1/health`.
-3. Test authentication: Navigate to your Vercel URL, click **Sign Up**, and create an account. Verify cookies and JWT access tokens function seamlessly across origins.
+Create a PostgreSQL Flexible Server:
+
+az postgres flexible-server create \
+  --resource-group openlobby-rg \
+  --name openlobby-db \
+  --location eastus \
+  --admin-user openlobbyadmin \
+  --admin-password "<PASSWORD>" \
+  --sku-name Standard_B1ms \
+  --tier Burstable \
+  --storage-size 32 \
+  --version 16 \
+  --public-access 0.0.0.0
+
+Create the database:
+
+az postgres flexible-server db create \
+  --resource-group openlobby-rg \
+  --server-name openlobby-db \
+  --database-name openlobby
+
+Connection string format:
+postgresql://openlobbyadmin:<PASSWORD>@openlobby-db.postgres.database.azure.com:5432/openlobby?sslmode=require
+
+Run Prisma schema push from local:
+DATABASE_URL="<connection_string>" npx prisma db push
+
+---
+
+5. AZURE BLOB STORAGE
+
+Create storage account:
+
+az storage account create \
+  --resource-group openlobby-rg \
+  --name openlobbystorage \
+  --location eastus \
+  --sku Standard_LRS \
+  --kind StorageV2
+
+Create media container:
+
+az storage container create \
+  --account-name openlobbystorage \
+  --name openlobby-media \
+  --public-access blob
+
+Get connection string:
+
+az storage account show-connection-string \
+  --resource-group openlobby-rg \
+  --name openlobbystorage \
+  --output tsv
+
+---
+
+6. AZURE CACHE FOR REDIS
+
+Create Redis instance (takes 15-20 minutes):
+
+az redis create \
+  --resource-group openlobby-rg \
+  --name openlobby-cache \
+  --location eastus \
+  --sku Basic \
+  --vm-size c0
+
+Redis URL format:
+rediss://:<PRIMARY_ACCESS_KEY>@openlobby-cache.redis.cache.windows.net:6380
+
+Note: Azure Redis uses rediss:// (TLS) on port 6380.
+
+---
+
+7. RESEND EMAIL SERVICE
+
+1. Sign up at resend.com.
+2. Create an API key with Sending access.
+3. Copy the key (starts with re_...).
+
+---
+
+8. BACKEND DEPLOYMENT (AZURE APP SERVICE)
+
+Create App Service:
+
+az appservice plan create \
+  --resource-group openlobby-rg \
+  --name openlobby-plan \
+  --sku F1 \
+  --is-linux
+
+az webapp create \
+  --resource-group openlobby-rg \
+  --plan openlobby-plan \
+  --name openlobby-api \
+  --runtime "NODE:20-lts"
+
+Configure environment variables:
+
+az webapp config appsettings set \
+  --resource-group openlobby-rg \
+  --name openlobby-api \
+  --settings \
+    NODE_ENV="production" \
+    PORT="8080" \
+    CORS_ORIGIN="https://openlobby.vercel.app" \
+    DATABASE_URL="<postgresql_connection_string>" \
+    JWT_ACCESS_SECRET="<random_64_char_hex>" \
+    JWT_REFRESH_SECRET="<random_64_char_hex>" \
+    AZURE_STORAGE_CONNECTION_STRING="<storage_connection_string>" \
+    AZURE_STORAGE_CONTAINER="openlobby-media" \
+    REDIS_URL="<redis_url>" \
+    RESEND_API_KEY="<resend_api_key>"
+
+Set startup command:
+
+az webapp config set \
+  --resource-group openlobby-rg \
+  --name openlobby-api \
+  --startup-file "npm run start"
+
+Deploy via GitHub Actions through Azure Portal Deployment Center.
+
+---
+
+9. FRONTEND DEPLOYMENT (VERCEL)
+
+1. Import eywron/OpenLobby on Vercel.
+2. Set Framework Preset to Next.js.
+3. Set Root Directory to frontend.
+4. Add environment variable:
+   NEXT_PUBLIC_API_URL = https://openlobby-api.azurewebsites.net/api/v1
+5. Deploy.
+
+After deployment, update CORS_ORIGIN on Azure to match the Vercel domain.
+
+---
+
+10. VERIFICATION
+
+1. Backend health: GET https://openlobby-api.azurewebsites.net/api/v1/health
+2. Frontend loads at Vercel URL.
+3. Registration and login work.
+4. Posts can be created.
+5. Search returns results.
+
+---
 
 End of Part 12
