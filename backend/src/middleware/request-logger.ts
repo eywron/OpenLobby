@@ -1,11 +1,11 @@
-import type { RequestHandler } from "express";
+import type { RequestHandler } from 'express';
 
-import { logger } from "../lib/logger";
+import { logger } from '../lib/logger';
 
 export const requestLogger: RequestHandler = (request, response, next) => {
   const startedAt = Date.now();
 
-  response.on("finish", () => {
+  response.on('finish', () => {
     const durationMs = Date.now() - startedAt;
 
     logger.info(
@@ -14,9 +14,9 @@ export const requestLogger: RequestHandler = (request, response, next) => {
         path: request.originalUrl,
         statusCode: response.statusCode,
         durationMs,
-        userAgent: request.get("user-agent")
+        userAgent: request.get('user-agent'),
       },
-      "request completed"
+      'request completed',
     );
   });
 

@@ -1,50 +1,43 @@
-import compression from "compression";
-import cookieParser from "cookie-parser";
-import cors from "cors";
-import express from "express";
-import helmet from "helmet";
+import express, { Express } from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import compression from 'compression';
+import { env } from './config/env.js';
+import { apiRouter } from './routes/index.js';
+import { errorHandler } from './middleware/error-handler.js';
+import { requestLogger } from './middleware/request-logger.js';
+import { apiLimiter } from './middleware/rate-limiter.js';
 
-import { env } from "./config/env";
-import { errorHandler } from "./middleware/error-handler";
-import { notFoundHandler } from "./middleware/not-found";
-import { requestLogger } from "./middleware/request-logger";
-import { apiRouter } from "./routes";
-import { createSuccessResponse } from "./utils/api-response";
-
-export function createApp() {
+export const createApp = (): Express => {
   const app = express();
 
-  app.disable("x-powered-by");
-  app.set("trust proxy", 1);
-
+  // Security middleware
   app.use(helmet());
   app.use(
     cors({
       origin: env.CORS_ORIGIN,
-      credentials: true
-    })
+      credentials: true,
+    }),
   );
+
+  // Rate limiting for all API routes
+  app.use('/api', apiLimiter);
+
+  // Parse JSON bodies and URL-encoded bodies
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+
+  // Compression
   app.use(compression());
-  app.use(express.json({ limit: "1mb" }));
-  app.use(express.urlencoded({ extended: false, limit: "1mb" }));
-  app.use(cookieParser());
+
+  // Logging
   app.use(requestLogger);
 
-  app.get("/", (_request, response) => {
-    response.status(200).json(
-      createSuccessResponse(
-        {
-          service: "openlobby-backend",
-          version: "v1"
-        },
-        "OpenLobby backend is running"
-      )
-    );
-  });
+  // Mount API routes
+  app.use('/api', apiRouter);
 
-  app.use("/api/v1", apiRouter);
-  app.use(notFoundHandler);
+  // Global error handler
   app.use(errorHandler);
 
   return app;
-}
+};

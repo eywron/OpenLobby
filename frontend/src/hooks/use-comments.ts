@@ -16,8 +16,19 @@ export const useCreateComment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ postId, textContent, parentId }: { postId: string; textContent: string; parentId?: string }) => {
-      const res = await api.post<ApiResponse<Comment>>(`/posts/${postId}/comments`, { textContent, parentId });
+    mutationFn: async ({
+      postId,
+      textContent,
+      parentId,
+    }: {
+      postId: string;
+      textContent: string;
+      parentId?: string;
+    }) => {
+      const res = await api.post<ApiResponse<Comment>>(`/posts/${postId}/comments`, {
+        textContent,
+        parentId,
+      });
       return res.data;
     },
     onSuccess: (_, variables) => {
@@ -43,7 +54,7 @@ export const useDeleteComment = () => {
 
 export const useLikeComment = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ postId, commentId }: { postId: string; commentId: string }) => {
       await api.post(`/posts/${postId}/comments/${commentId}/like`);
@@ -56,7 +67,7 @@ export const useLikeComment = () => {
 
 export const useUnlikeComment = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ postId, commentId }: { postId: string; commentId: string }) => {
       await api.delete(`/posts/${postId}/comments/${commentId}/like`);

@@ -1,9 +1,14 @@
-import type { AccessTokenPayload } from "../utils/token";
-
 declare global {
   namespace Express {
     interface Request {
-      user?: AccessTokenPayload & { role?: string };
+      user?: {
+        userId: string;
+        firebaseUid: string;
+        email: string;
+        username: string;
+        role: string;
+      };
     }
   }
 }
+export {};

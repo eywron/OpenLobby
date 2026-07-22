@@ -24,6 +24,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
+    "firebase": "^11.9.0",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.25.0",
     "next": "^15.3.5",
@@ -33,7 +34,7 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "^4.4.3"
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@types/node": "^24.0.14",

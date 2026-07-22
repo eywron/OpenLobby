@@ -1,24 +1,28 @@
-import "dotenv/config";
+import 'dotenv/config';
+import { z } from 'zod';
 
-import { z } from "zod";
-
-const environmentSchema = z.object({
-  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  PORT: z.coerce.number().int().positive().default(4000),
-  CORS_ORIGIN: z.string().url().default("http://localhost:3000"),
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  PORT: z.coerce.number().default(4000),
+  CORS_ORIGIN: z.string().url().default('http://localhost:3000'),
   DATABASE_URL: z.string().min(1),
-  JWT_ACCESS_SECRET: z.string().min(1),
-  JWT_REFRESH_SECRET: z.string().min(1),
-  AZURE_STORAGE_CONNECTION_STRING: z.string().min(1),
-  AZURE_STORAGE_CONTAINER: z.string().min(1),
-  REDIS_URL: z.string().min(1),
-  RESEND_API_KEY: z.string().min(1)
+  FIREBASE_PROJECT_ID: z.string().min(1),
+  FIREBASE_CLIENT_EMAIL: z.string().min(1),
+  FIREBASE_PRIVATE_KEY: z.string().min(1),
+  MINIO_ENDPOINT: z.string().default('localhost'),
+  MINIO_PORT: z.coerce.number().default(9000),
+  MINIO_ACCESS_KEY: z.string().min(1),
+  MINIO_SECRET_KEY: z.string().min(1),
+  MINIO_BUCKET: z.string().default('openlobby-media'),
+  MINIO_USE_SSL: z.coerce.boolean().default(false),
+  REDIS_URL: z.string().optional(),
 });
 
-const parsedEnvironment = environmentSchema.safeParse(process.env);
+const parsedEnv = envSchema.safeParse(process.env);
 
-if (!parsedEnvironment.success) {
-  throw new Error(`Invalid backend environment configuration: ${parsedEnvironment.error.message}`);
+if (!parsedEnv.success) {
+  console.error('Invalid environment variables', parsedEnv.error.format());
+  process.exit(1);
 }
 
-export const env = parsedEnvironment.data;
+export const env = parsedEnv.data;

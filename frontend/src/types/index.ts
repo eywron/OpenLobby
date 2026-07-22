@@ -1,13 +1,16 @@
 export interface User {
   id: string;
+  firebaseUid: string;
   username: string;
   displayName: string;
   email: string;
+  emailVerified: boolean;
+  provider: string;
   avatarUrl?: string;
   bannerUrl?: string;
   bio?: string;
   role: 'USER' | 'ADMIN' | 'MODERATOR';
-  accountStatus: 'ACTIVE' | 'SUSPENDED' | 'BANNED';
+  accountStatus: 'ACTIVE' | 'SUSPENDED';
   createdAt: string;
 }
 
@@ -92,7 +95,7 @@ export interface ApiResponse<T> {
   error?: {
     code: string;
     message: string;
-    details?: unknown;
+    details?: any;
   };
 }
 

@@ -16,7 +16,9 @@ export const useFollowStatus = (userId: string) => {
   return useQuery({
     queryKey: ['follow-status', userId],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<{ isFollowing: boolean }>>(`/users/${userId}/follow-status`);
+      const res = await api.get<ApiResponse<{ isFollowing: boolean }>>(
+        `/users/${userId}/follow-status`,
+      );
       return res.data;
     },
   });
@@ -54,7 +56,9 @@ export const useFollowers = (userId: string, limit = 20) => {
   return useInfiniteQuery({
     queryKey: ['followers', userId],
     queryFn: async ({ pageParam = 0 }) => {
-      const res = await api.get<ApiResponse<PaginatedResponse<User>>>(`/users/${userId}/followers?limit=${limit}&skip=${pageParam}`);
+      const res = await api.get<ApiResponse<PaginatedResponse<User>>>(
+        `/users/${userId}/followers?limit=${limit}&skip=${pageParam}`,
+      );
       return res.data;
     },
     getNextPageParam: (lastPage, allPages) => {
@@ -71,7 +75,9 @@ export const useFollowing = (userId: string, limit = 20) => {
   return useInfiniteQuery({
     queryKey: ['following', userId],
     queryFn: async ({ pageParam = 0 }) => {
-      const res = await api.get<ApiResponse<PaginatedResponse<User>>>(`/users/${userId}/following?limit=${limit}&skip=${pageParam}`);
+      const res = await api.get<ApiResponse<PaginatedResponse<User>>>(
+        `/users/${userId}/following?limit=${limit}&skip=${pageParam}`,
+      );
       return res.data;
     },
     getNextPageParam: (lastPage, allPages) => {

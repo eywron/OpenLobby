@@ -7,11 +7,7 @@ import { Card } from '@/components/ui/card';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function AuthLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
@@ -40,9 +36,7 @@ export default function AuthLayout({
           OpenLobby
         </Link>
       </div>
-      <Card className="w-full max-w-md shadow-sm border-border/50">
-        {children}
-      </Card>
+      <Card className="w-full max-w-md shadow-sm border-border/50">{children}</Card>
     </div>
   );
 }

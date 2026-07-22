@@ -1,15 +1,15 @@
-import { AppError } from "../errors/app-error";
-import * as userRepository from "../repositories/user.repository";
-import * as notificationService from "./notification.service";
-import type { UpdateProfileInput, UpdateSettingsInput } from "../schemas/user.schema";
+import { AppError } from '../errors/app-error';
+import * as userRepository from '../repositories/user.repository';
+import * as notificationService from './notification.service';
+import type { UpdateProfileInput, UpdateSettingsInput } from '../schemas/user.schema';
 
 export async function getUserProfile(userId: string) {
   const user = await userRepository.getUserProfile(userId);
   if (!user) {
     throw new AppError({
-      message: "User not found",
+      message: 'User not found',
       statusCode: 404,
-      code: "USER_NOT_FOUND"
+      code: 'USER_NOT_FOUND',
     });
   }
   return user;
@@ -19,9 +19,9 @@ export async function getPublicProfile(username: string) {
   const user = await userRepository.getPublicProfile(username);
   if (!user) {
     throw new AppError({
-      message: "User not found",
+      message: 'User not found',
       statusCode: 404,
-      code: "USER_NOT_FOUND"
+      code: 'USER_NOT_FOUND',
     });
   }
   return user;
@@ -49,9 +49,9 @@ export async function getUserSettings(userId: string) {
   const settings = await userRepository.getUserSettings(userId);
   if (!settings) {
     throw new AppError({
-      message: "User settings not found",
+      message: 'User settings not found',
       statusCode: 404,
-      code: "SETTINGS_NOT_FOUND"
+      code: 'SETTINGS_NOT_FOUND',
     });
   }
   return settings;
@@ -65,10 +65,13 @@ export async function updateSettings(userId: string, input: UpdateSettingsInput)
     privacyProfilePublic?: boolean;
   } = {};
 
-  if (input.emailNotifications !== undefined) updateData.emailNotifications = input.emailNotifications;
+  if (input.emailNotifications !== undefined)
+    updateData.emailNotifications = input.emailNotifications;
   if (input.pushNotifications !== undefined) updateData.pushNotifications = input.pushNotifications;
-  if (input.directMessageNotifications !== undefined) updateData.directMessageNotifications = input.directMessageNotifications;
-  if (input.privacyProfilePublic !== undefined) updateData.privacyProfilePublic = input.privacyProfilePublic;
+  if (input.directMessageNotifications !== undefined)
+    updateData.directMessageNotifications = input.directMessageNotifications;
+  if (input.privacyProfilePublic !== undefined)
+    updateData.privacyProfilePublic = input.privacyProfilePublic;
 
   return userRepository.updateUserSettings(userId, updateData);
 }
@@ -76,18 +79,18 @@ export async function updateSettings(userId: string, input: UpdateSettingsInput)
 export async function followUser(followerId: string, followingId: string) {
   if (followerId === followingId) {
     throw new AppError({
-      message: "You cannot follow yourself",
+      message: 'You cannot follow yourself',
       statusCode: 400,
-      code: "CANNOT_FOLLOW_SELF"
+      code: 'CANNOT_FOLLOW_SELF',
     });
   }
 
   const existingFollow = await userRepository.checkFollowStatus(followerId, followingId);
   if (existingFollow) {
     throw new AppError({
-      message: "You already follow this user",
+      message: 'You already follow this user',
       statusCode: 400,
-      code: "ALREADY_FOLLOWING"
+      code: 'ALREADY_FOLLOWING',
     });
   }
 
@@ -97,7 +100,7 @@ export async function followUser(followerId: string, followingId: string) {
   await notificationService.createNotification({
     recipientId: followingId,
     actorId: followerId,
-    type: "FOLLOW"
+    type: 'FOLLOW',
   });
 
   return follow;
@@ -110,7 +113,7 @@ export async function unfollowUser(followerId: string, followingId: string) {
 export async function getFollowStatus(followerId: string, followingId: string) {
   const follow = await userRepository.checkFollowStatus(followerId, followingId);
   return {
-    isFollowing: !!follow
+    isFollowing: !!follow,
   };
 }
 
@@ -119,9 +122,9 @@ export async function getFollowers(userId: string, limit: number = 20, skip: num
   const total = await userRepository.getFollowerCount(userId);
 
   return {
-    followers: follows.map((f: { follower: typeof follows[0]["follower"] }) => f.follower),
+    followers: follows.map((f: { follower: (typeof follows)[0]['follower'] }) => f.follower),
     total,
-    hasMore: skip + limit < total
+    hasMore: skip + limit < total,
   };
 }
 
@@ -130,8 +133,8 @@ export async function getFollowing(userId: string, limit: number = 20, skip: num
   const total = await userRepository.getFollowingCount(userId);
 
   return {
-    following: follows.map((f: { following: typeof follows[0]["following"] }) => f.following),
+    following: follows.map((f: { following: (typeof follows)[0]['following'] }) => f.following),
     total,
-    hasMore: skip + limit < total
+    hasMore: skip + limit < total,
   };
 }

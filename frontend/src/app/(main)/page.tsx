@@ -14,11 +14,16 @@ export default function HomeFeedPage() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.length > 0 && entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        if (
+          entries.length > 0 &&
+          entries[0]?.isIntersecting &&
+          hasNextPage &&
+          !isFetchingNextPage
+        ) {
           fetchNextPage();
         }
       },
-      { threshold: 1.0 }
+      { threshold: 1.0 },
     );
 
     if (bottomRef.current) {
@@ -36,14 +41,14 @@ export default function HomeFeedPage() {
     );
   }
 
-  const posts = data?.pages.flatMap(page => page.items) || [];
+  const posts = data?.pages.flatMap((page) => page.items) || [];
 
   return (
     <div className="flex flex-col min-h-screen">
       <div className="hidden sm:block text-center text-xs text-muted-foreground py-2 border-b border-border">
         Pull down to refresh
       </div>
-      
+
       <CreatePostForm />
 
       <div className="flex-1">
@@ -58,9 +63,9 @@ export default function HomeFeedPage() {
             No posts yet. Follow some users or create your first post!
           </div>
         ) : (
-          posts.map(post => <PostCard key={post.id} post={post} />)
+          posts.map((post) => <PostCard key={post.id} post={post} />)
         )}
-        
+
         <div ref={bottomRef} className="h-10 flex items-center justify-center">
           {isFetchingNextPage && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
         </div>

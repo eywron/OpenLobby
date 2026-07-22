@@ -1,22 +1,24 @@
-import { AppError } from "../errors/app-error";
-import * as postRepository from "../repositories/post.repository";
-import * as notificationService from "./notification.service";
-import type { CreatePostInput, UpdatePostInput, CreateCommentInput } from "../schemas/post.schema";
+import { AppError } from '../errors/app-error';
+import * as postRepository from '../repositories/post.repository';
+import * as notificationService from './notification.service';
+import type { CreatePostInput, UpdatePostInput, CreateCommentInput } from '../schemas/post.schema';
 
 export async function createPost(userId: string, input: CreatePostInput) {
   const createData: {
     content: string;
     visibility: string;
-    images?: Array<{ url: string; alt?: string }>;
+    images?: Array<{ url: string; thumbnailUrl: string; width: number; height: number }>;
   } = {
     content: input.content,
-    visibility: input.visibility
+    visibility: input.visibility,
   };
 
   if (input.images !== undefined) {
     createData.images = input.images.map((img) => ({
       url: img.url,
-      ...(img.alt !== undefined && { alt: img.alt })
+      thumbnailUrl: img.thumbnailUrl,
+      width: img.width,
+      height: img.height,
     }));
   }
 
@@ -27,9 +29,9 @@ export async function getPost(postId: string) {
   const post = await postRepository.getPostById(postId);
   if (!post) {
     throw new AppError({
-      message: "Post not found",
+      message: 'Post not found',
       statusCode: 404,
-      code: "POST_NOT_FOUND"
+      code: 'POST_NOT_FOUND',
     });
   }
   return post;
@@ -47,17 +49,17 @@ export async function updatePost(userId: string, postId: string, input: UpdatePo
   const post = await postRepository.getPostById(postId);
   if (!post) {
     throw new AppError({
-      message: "Post not found",
+      message: 'Post not found',
       statusCode: 404,
-      code: "POST_NOT_FOUND"
+      code: 'POST_NOT_FOUND',
     });
   }
 
   if (post.authorId !== userId) {
     throw new AppError({
-      message: "You can only edit your own posts",
+      message: 'You can only edit your own posts',
       statusCode: 403,
-      code: "FORBIDDEN"
+      code: 'FORBIDDEN',
     });
   }
 
@@ -76,17 +78,17 @@ export async function deletePost(userId: string, postId: string) {
   const post = await postRepository.getPostById(postId);
   if (!post) {
     throw new AppError({
-      message: "Post not found",
+      message: 'Post not found',
       statusCode: 404,
-      code: "POST_NOT_FOUND"
+      code: 'POST_NOT_FOUND',
     });
   }
 
   if (post.authorId !== userId) {
     throw new AppError({
-      message: "You can only delete your own posts",
+      message: 'You can only delete your own posts',
       statusCode: 403,
-      code: "FORBIDDEN"
+      code: 'FORBIDDEN',
     });
   }
 
@@ -97,18 +99,18 @@ export async function likePost(userId: string, postId: string) {
   const post = await postRepository.getPostById(postId);
   if (!post) {
     throw new AppError({
-      message: "Post not found",
+      message: 'Post not found',
       statusCode: 404,
-      code: "POST_NOT_FOUND"
+      code: 'POST_NOT_FOUND',
     });
   }
 
   const existingLike = await postRepository.checkPostLike(postId, userId);
   if (existingLike) {
     throw new AppError({
-      message: "You already liked this post",
+      message: 'You already liked this post',
       statusCode: 400,
-      code: "ALREADY_LIKED"
+      code: 'ALREADY_LIKED',
     });
   }
 
@@ -119,8 +121,8 @@ export async function likePost(userId: string, postId: string) {
     await notificationService.createNotification({
       recipientId: post.authorId,
       actorId: userId,
-      type: "LIKE",
-      postId
+      type: 'LIKE',
+      postId,
     });
   }
 
@@ -140,18 +142,18 @@ export async function bookmarkPost(userId: string, postId: string) {
   const post = await postRepository.getPostById(postId);
   if (!post) {
     throw new AppError({
-      message: "Post not found",
+      message: 'Post not found',
       statusCode: 404,
-      code: "POST_NOT_FOUND"
+      code: 'POST_NOT_FOUND',
     });
   }
 
   const existingBookmark = await postRepository.checkPostBookmark(postId, userId);
   if (existingBookmark) {
     throw new AppError({
-      message: "You already bookmarked this post",
+      message: 'You already bookmarked this post',
       statusCode: 400,
-      code: "ALREADY_BOOKMARKED"
+      code: 'ALREADY_BOOKMARKED',
     });
   }
 
@@ -171,14 +173,14 @@ export async function createComment(
   userId: string,
   postId: string,
   input: CreateCommentInput,
-  replyToId?: string
+  replyToId?: string,
 ) {
   const post = await postRepository.getPostById(postId);
   if (!post) {
     throw new AppError({
-      message: "Post not found",
+      message: 'Post not found',
       statusCode: 404,
-      code: "POST_NOT_FOUND"
+      code: 'POST_NOT_FOUND',
     });
   }
 
@@ -190,10 +192,9 @@ export async function createComment(
     await notificationService.createNotification({
       recipientId: replyToId,
       actorId: userId,
-      type: "REPLY",
+      type: 'REPLY',
       postId,
       commentId: comment.id,
-      content: input.content
     });
   } else {
     // Notify post author if commenting on their post
@@ -201,10 +202,9 @@ export async function createComment(
       await notificationService.createNotification({
         recipientId: post.authorId,
         actorId: userId,
-        type: "COMMENT",
+        type: 'COMMENT',
         postId,
         commentId: comment.id,
-        content: input.content
       });
     }
   }
@@ -222,9 +222,9 @@ export async function deleteComment(userId: string, commentId: string) {
   const comment = await postRepository.getPostById(commentId);
   if (!comment) {
     throw new AppError({
-      message: "Comment not found",
+      message: 'Comment not found',
       statusCode: 404,
-      code: "COMMENT_NOT_FOUND"
+      code: 'COMMENT_NOT_FOUND',
     });
   }
 
@@ -232,9 +232,9 @@ export async function deleteComment(userId: string, commentId: string) {
   const authorId = (comment as unknown as { authorId?: string }).authorId;
   if (authorId !== userId) {
     throw new AppError({
-      message: "You can only delete your own comments",
+      message: 'You can only delete your own comments',
       statusCode: 403,
-      code: "FORBIDDEN"
+      code: 'FORBIDDEN',
     });
   }
 
@@ -245,9 +245,9 @@ export async function likeComment(userId: string, commentId: string) {
   const existingLike = await postRepository.checkCommentLike(commentId, userId);
   if (existingLike) {
     throw new AppError({
-      message: "You already liked this comment",
+      message: 'You already liked this comment',
       statusCode: 400,
-      code: "ALREADY_LIKED"
+      code: 'ALREADY_LIKED',
     });
   }
 

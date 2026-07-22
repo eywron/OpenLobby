@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { api } from '@/lib/api';
+import { useAuth } from '@/providers/auth-provider';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordPage() {
+  const { resetPassword } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -33,7 +34,7 @@ export default function ForgotPasswordPage() {
   const onSubmit = async (data: ForgotPasswordValues) => {
     setIsSubmitting(true);
     try {
-      await api.post('/auth/forgot-password', { email: data.email });
+      await resetPassword(data.email);
       setIsSuccess(true);
     } catch (error: any) {
       toast.error(error.message || 'Failed to send reset link. Please try again.');
@@ -78,9 +79,7 @@ export default function ForgotPasswordPage() {
                 {...register('email')}
                 className={errors.email ? 'border-destructive' : ''}
               />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
-              )}
+              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
@@ -95,7 +94,10 @@ export default function ForgotPasswordPage() {
             </Button>
 
             <div className="mt-4 text-center text-sm">
-              <Link href="/login" className="font-medium hover:underline text-muted-foreground hover:text-foreground">
+              <Link
+                href="/login"
+                className="font-medium hover:underline text-muted-foreground hover:text-foreground"
+              >
                 Back to login
               </Link>
             </div>

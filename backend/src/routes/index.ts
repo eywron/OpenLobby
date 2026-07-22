@@ -1,31 +1,22 @@
-import { Router } from "express";
-
-import { env } from "../config/env";
-import { createSuccessResponse } from "../utils/api-response";
-import { healthRouter } from "./health.routes";
-import { authRouter } from "./auth.routes";
-import { userRouter } from "./user.routes";
-import { postRouter } from "./post.routes";
-import { notificationRouter } from "./notification.routes";
-import { moderationRouter } from "./moderation.routes";
-
-import { conversationRouter, messageRouter } from "./message.routes";
-import { searchRouter } from "./search.routes";
+import { Router } from 'express';
+import { healthRouter } from './health.routes.js';
+import { authRouter } from './auth.routes.js';
+import { postRouter } from './post.routes.js';
+import { userRouter } from './user.routes.js';
+import { uploadRouter } from './upload.routes.js';
+import { notificationRouter } from './notification.routes.js';
+import { messageRouter } from './message.routes.js';
+import { moderationRouter } from './moderation.routes.js';
+import { searchRouter } from './search.routes.js';
 
 export const apiRouter = Router();
 
-apiRouter.get("/", (_request, response) => {
-  response
-    .status(200)
-    .json(createSuccessResponse({ service: "openlobby-backend", version: "v1" }, `${env.NODE_ENV} API is running`));
-});
-
-apiRouter.use("/health", healthRouter);
-apiRouter.use("/auth", authRouter);
-apiRouter.use("/users", userRouter);
-apiRouter.use("/posts", postRouter);
-apiRouter.use("/notifications", notificationRouter);
-apiRouter.use("/admin", moderationRouter);
-apiRouter.use("/conversations", conversationRouter);
-apiRouter.use("/messages", messageRouter);
-apiRouter.use("/search", searchRouter);
+apiRouter.use('/health', healthRouter);
+apiRouter.use('/auth', authRouter);
+apiRouter.use('/posts', postRouter);
+apiRouter.use('/users', userRouter);
+apiRouter.use('/uploads', uploadRouter);
+apiRouter.use('/notifications', notificationRouter);
+apiRouter.use('/messages', messageRouter);
+apiRouter.use('/moderation', moderationRouter);
+apiRouter.use('/search', searchRouter);

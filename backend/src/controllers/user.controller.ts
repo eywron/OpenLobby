@@ -1,22 +1,22 @@
-import type { Request, Response } from "express";
+import type { Request, Response } from 'express';
 
-import { AppError } from "../errors/app-error";
-import { createSuccessResponse, createErrorResponse } from "../utils/api-response";
-import { updateProfileSchema, updateSettingsSchema } from "../schemas/user.schema";
-import * as userService from "../services/user.service";
+import { AppError } from '../errors/app-error';
+import { createSuccessResponse, createErrorResponse } from '../utils/api-response';
+import { updateProfileSchema, updateSettingsSchema } from '../schemas/user.schema';
+import * as userService from '../services/user.service';
 
 export async function getProfile(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
   const profile = await userService.getUserProfile(userId);
-  response.status(200).json(createSuccessResponse(profile, "Profile retrieved"));
+  response.status(200).json(createSuccessResponse(profile, 'Profile retrieved'));
 }
 
 export async function getPublicProfile(request: Request, response: Response): Promise<void> {
@@ -25,23 +25,23 @@ export async function getPublicProfile(request: Request, response: Response): Pr
     : request.params.username;
   if (!username) {
     throw new AppError({
-      message: "Username is required",
+      message: 'Username is required',
       statusCode: 400,
-      code: "MISSING_USERNAME"
+      code: 'MISSING_USERNAME',
     });
   }
 
   const profile = await userService.getPublicProfile(username);
-  response.status(200).json(createSuccessResponse(profile, "Public profile retrieved"));
+  response.status(200).json(createSuccessResponse(profile, 'Public profile retrieved'));
 }
 
 export async function updateProfile(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -49,39 +49,39 @@ export async function updateProfile(request: Request, response: Response): Promi
   if (!validation.success) {
     response.status(400).json(
       createErrorResponse({
-        code: "VALIDATION_ERROR",
-        message: "Invalid input",
-        details: validation.error.flatten()
-      })
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid input',
+        details: validation.error.flatten(),
+      }),
     );
     return;
   }
 
   const profile = await userService.updateProfile(userId, validation.data);
-  response.status(200).json(createSuccessResponse(profile, "Profile updated"));
+  response.status(200).json(createSuccessResponse(profile, 'Profile updated'));
 }
 
 export async function getSettings(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
   const settings = await userService.getUserSettings(userId);
-  response.status(200).json(createSuccessResponse(settings, "Settings retrieved"));
+  response.status(200).json(createSuccessResponse(settings, 'Settings retrieved'));
 }
 
 export async function updateSettings(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -89,48 +89,48 @@ export async function updateSettings(request: Request, response: Response): Prom
   if (!validation.success) {
     response.status(400).json(
       createErrorResponse({
-        code: "VALIDATION_ERROR",
-        message: "Invalid input",
-        details: validation.error.flatten()
-      })
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid input',
+        details: validation.error.flatten(),
+      }),
     );
     return;
   }
 
   const settings = await userService.updateSettings(userId, validation.data);
-  response.status(200).json(createSuccessResponse(settings, "Settings updated"));
+  response.status(200).json(createSuccessResponse(settings, 'Settings updated'));
 }
 
 export async function followUser(request: Request, response: Response): Promise<void> {
   const followerId = request.user?.userId;
   if (!followerId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
   const { userId: followingId } = request.body;
   if (!followingId) {
     throw new AppError({
-      message: "User ID to follow is required",
+      message: 'User ID to follow is required',
       statusCode: 400,
-      code: "MISSING_USER_ID"
+      code: 'MISSING_USER_ID',
     });
   }
 
   await userService.followUser(followerId, followingId);
-  response.status(201).json(createSuccessResponse({ success: true }, "User followed"));
+  response.status(201).json(createSuccessResponse({ success: true }, 'User followed'));
 }
 
 export async function unfollowUser(request: Request, response: Response): Promise<void> {
   const followerId = request.user?.userId;
   if (!followerId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -139,23 +139,23 @@ export async function unfollowUser(request: Request, response: Response): Promis
     : request.params.userId;
   if (!followingId) {
     throw new AppError({
-      message: "User ID to unfollow is required",
+      message: 'User ID to unfollow is required',
       statusCode: 400,
-      code: "MISSING_USER_ID"
+      code: 'MISSING_USER_ID',
     });
   }
 
   await userService.unfollowUser(followerId, followingId);
-  response.status(200).json(createSuccessResponse({ success: true }, "User unfollowed"));
+  response.status(200).json(createSuccessResponse({ success: true }, 'User unfollowed'));
 }
 
 export async function getFollowStatus(request: Request, response: Response): Promise<void> {
   const followerId = request.user?.userId;
   if (!followerId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -164,14 +164,14 @@ export async function getFollowStatus(request: Request, response: Response): Pro
     : request.params.userId;
   if (!followingId) {
     throw new AppError({
-      message: "User ID is required",
+      message: 'User ID is required',
       statusCode: 400,
-      code: "MISSING_USER_ID"
+      code: 'MISSING_USER_ID',
     });
   }
 
   const status = await userService.getFollowStatus(followerId, followingId);
-  response.status(200).json(createSuccessResponse(status, "Follow status retrieved"));
+  response.status(200).json(createSuccessResponse(status, 'Follow status retrieved'));
 }
 
 export async function getFollowers(request: Request, response: Response): Promise<void> {
@@ -180,9 +180,9 @@ export async function getFollowers(request: Request, response: Response): Promis
     : request.params.userId;
   if (!userId) {
     throw new AppError({
-      message: "User ID is required",
+      message: 'User ID is required',
       statusCode: 400,
-      code: "MISSING_USER_ID"
+      code: 'MISSING_USER_ID',
     });
   }
 
@@ -190,7 +190,7 @@ export async function getFollowers(request: Request, response: Response): Promis
   const skip = Math.max(parseInt(request.query.skip as string) || 0, 0);
 
   const result = await userService.getFollowers(userId, limit, skip);
-  response.status(200).json(createSuccessResponse(result, "Followers retrieved"));
+  response.status(200).json(createSuccessResponse(result, 'Followers retrieved'));
 }
 
 export async function getFollowing(request: Request, response: Response): Promise<void> {
@@ -199,9 +199,9 @@ export async function getFollowing(request: Request, response: Response): Promis
     : request.params.userId;
   if (!userId) {
     throw new AppError({
-      message: "User ID is required",
+      message: 'User ID is required',
       statusCode: 400,
-      code: "MISSING_USER_ID"
+      code: 'MISSING_USER_ID',
     });
   }
 
@@ -209,5 +209,5 @@ export async function getFollowing(request: Request, response: Response): Promis
   const skip = Math.max(parseInt(request.query.skip as string) || 0, 0);
 
   const result = await userService.getFollowing(userId, limit, skip);
-  response.status(200).json(createSuccessResponse(result, "Following retrieved"));
+  response.status(200).json(createSuccessResponse(result, 'Following retrieved'));
 }

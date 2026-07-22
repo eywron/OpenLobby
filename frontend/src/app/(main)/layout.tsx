@@ -9,11 +9,7 @@ import { MobileNav } from '@/components/mobile-nav';
 import { RightSidebar } from '@/components/right-sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function MainLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function MainLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
@@ -45,9 +41,7 @@ export default function MainLayout({
       <div className="flex flex-1 mx-auto w-full max-w-7xl">
         <Sidebar />
         <main className="flex-1 min-w-0 border-x border-border lg:mx-0 pb-14 lg:pb-0">
-          <div className="max-w-2xl mx-auto w-full">
-            {children}
-          </div>
+          <div className="max-w-2xl mx-auto w-full">{children}</div>
         </main>
         <RightSidebar />
       </div>

@@ -1,23 +1,23 @@
-import type { Request, Response } from "express";
+import type { Request, Response } from 'express';
 
-import { AppError } from "../errors/app-error";
-import { createSuccessResponse, createErrorResponse } from "../utils/api-response";
+import { AppError } from '../errors/app-error';
+import { createSuccessResponse, createErrorResponse } from '../utils/api-response';
 import {
   createReportSchema,
   getReportsQuerySchema,
   reviewReportSchema,
   suspendUserSchema,
-  deleteContentSchema
-} from "../schemas/moderation.schema";
-import * as moderationService from "../services/moderation.service";
+  deleteContentSchema,
+} from '../schemas/moderation.schema';
+import * as moderationService from '../services/moderation.service';
 
 export async function createReport(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -25,25 +25,25 @@ export async function createReport(request: Request, response: Response): Promis
   if (!validation.success) {
     response.status(400).json(
       createErrorResponse({
-        code: "VALIDATION_ERROR",
-        message: "Invalid input",
-        details: validation.error.flatten()
-      })
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid input',
+        details: validation.error.flatten(),
+      }),
     );
     return;
   }
 
   const report = await moderationService.createReport(userId, validation.data);
-  response.status(201).json(createSuccessResponse(report, "Report created"));
+  response.status(201).json(createSuccessResponse(report, 'Report created'));
 }
 
 export async function getReports(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -51,16 +51,16 @@ export async function getReports(request: Request, response: Response): Promise<
   if (!validation.success) {
     response.status(400).json(
       createErrorResponse({
-        code: "VALIDATION_ERROR",
-        message: "Invalid query parameters",
-        details: validation.error.flatten()
-      })
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid query parameters',
+        details: validation.error.flatten(),
+      }),
     );
     return;
   }
 
   const result = await moderationService.getReports(validation.data);
-  response.status(200).json(createSuccessResponse(result, "Reports retrieved"));
+  response.status(200).json(createSuccessResponse(result, 'Reports retrieved'));
 }
 
 export async function getReportById(request: Request, response: Response): Promise<void> {
@@ -69,23 +69,23 @@ export async function getReportById(request: Request, response: Response): Promi
     : request.params.reportId;
   if (!reportId) {
     throw new AppError({
-      message: "Report ID is required",
+      message: 'Report ID is required',
       statusCode: 400,
-      code: "MISSING_REPORT_ID"
+      code: 'MISSING_REPORT_ID',
     });
   }
 
   const report = await moderationService.getReportById(reportId);
-  response.status(200).json(createSuccessResponse(report, "Report retrieved"));
+  response.status(200).json(createSuccessResponse(report, 'Report retrieved'));
 }
 
 export async function reviewReport(request: Request, response: Response): Promise<void> {
   const adminId = request.user?.userId;
   if (!adminId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -93,25 +93,25 @@ export async function reviewReport(request: Request, response: Response): Promis
   if (!validation.success) {
     response.status(400).json(
       createErrorResponse({
-        code: "VALIDATION_ERROR",
-        message: "Invalid input",
-        details: validation.error.flatten()
-      })
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid input',
+        details: validation.error.flatten(),
+      }),
     );
     return;
   }
 
   const report = await moderationService.reviewReport(adminId, validation.data);
-  response.status(200).json(createSuccessResponse(report, "Report reviewed"));
+  response.status(200).json(createSuccessResponse(report, 'Report reviewed'));
 }
 
 export async function suspendUser(request: Request, response: Response): Promise<void> {
   const adminId = request.user?.userId;
   if (!adminId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -119,25 +119,25 @@ export async function suspendUser(request: Request, response: Response): Promise
   if (!validation.success) {
     response.status(400).json(
       createErrorResponse({
-        code: "VALIDATION_ERROR",
-        message: "Invalid input",
-        details: validation.error.flatten()
-      })
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid input',
+        details: validation.error.flatten(),
+      }),
     );
     return;
   }
 
   const user = await moderationService.suspendUser(adminId, validation.data);
-  response.status(200).json(createSuccessResponse(user, "User suspended"));
+  response.status(200).json(createSuccessResponse(user, 'User suspended'));
 }
 
 export async function unsuspendUser(request: Request, response: Response): Promise<void> {
   const adminId = request.user?.userId;
   if (!adminId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -146,23 +146,23 @@ export async function unsuspendUser(request: Request, response: Response): Promi
     : request.params.userId;
   if (!userId) {
     throw new AppError({
-      message: "User ID is required",
+      message: 'User ID is required',
       statusCode: 400,
-      code: "MISSING_USER_ID"
+      code: 'MISSING_USER_ID',
     });
   }
 
   const user = await moderationService.unsuspendUser(adminId, userId);
-  response.status(200).json(createSuccessResponse(user, "User unsuspended"));
+  response.status(200).json(createSuccessResponse(user, 'User unsuspended'));
 }
 
 export async function deleteUser(request: Request, response: Response): Promise<void> {
   const adminId = request.user?.userId;
   if (!adminId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -171,32 +171,32 @@ export async function deleteUser(request: Request, response: Response): Promise<
     : request.params.userId;
   if (!userId) {
     throw new AppError({
-      message: "User ID is required",
+      message: 'User ID is required',
       statusCode: 400,
-      code: "MISSING_USER_ID"
+      code: 'MISSING_USER_ID',
     });
   }
 
   const reason = request.body.reason as string;
   if (!reason) {
     throw new AppError({
-      message: "Deletion reason is required",
+      message: 'Deletion reason is required',
       statusCode: 400,
-      code: "MISSING_REASON"
+      code: 'MISSING_REASON',
     });
   }
 
   const user = await moderationService.deleteUser(adminId, userId, reason);
-  response.status(200).json(createSuccessResponse(user, "User deleted"));
+  response.status(200).json(createSuccessResponse(user, 'User deleted'));
 }
 
 export async function deleteContent(request: Request, response: Response): Promise<void> {
   const adminId = request.user?.userId;
   if (!adminId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -204,25 +204,25 @@ export async function deleteContent(request: Request, response: Response): Promi
   if (!validation.success) {
     response.status(400).json(
       createErrorResponse({
-        code: "VALIDATION_ERROR",
-        message: "Invalid input",
-        details: validation.error.flatten()
-      })
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid input',
+        details: validation.error.flatten(),
+      }),
     );
     return;
   }
 
   const content = await moderationService.deleteContent(adminId, validation.data);
-  response.status(200).json(createSuccessResponse(content, "Content deleted"));
+  response.status(200).json(createSuccessResponse(content, 'Content deleted'));
 }
 
 export async function getAuditLogs(request: Request, response: Response): Promise<void> {
   const adminId = request.user?.userId;
   if (!adminId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -236,7 +236,7 @@ export async function getAuditLogs(request: Request, response: Response): Promis
     adminId?: string;
   } = {
     limit,
-    skip
+    skip,
   };
 
   if (filterAdminId !== undefined) {
@@ -245,5 +245,5 @@ export async function getAuditLogs(request: Request, response: Response): Promis
 
   const logs = await moderationService.getAuditLogs(serviceOptions);
 
-  response.status(200).json(createSuccessResponse(logs, "Audit logs retrieved"));
+  response.status(200).json(createSuccessResponse(logs, 'Audit logs retrieved'));
 }

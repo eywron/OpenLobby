@@ -1,25 +1,20 @@
-import js from "@eslint/js";
-import globals from "globals";
-import tseslint from "typescript-eslint";
+import js from '@eslint/js';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
 export default [
   {
-    ignores: [
-      "**/node_modules/**",
-      "**/dist/**",
-      "**/.next/**",
-      "**/coverage/**"
-    ]
+    ignores: ['**/node_modules/**', '**/dist/**', '**/.next/**', '**/coverage/**'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ["**/*.{js,mjs,cjs,ts,tsx}"],
+    files: ['**/*.{js,mjs,cjs,ts,tsx}'],
     languageOptions: {
       globals: {
         ...globals.node,
-        ...globals.browser
-      }
-    }
-  }
+        ...globals.browser,
+      },
+    },
+  },
 ];

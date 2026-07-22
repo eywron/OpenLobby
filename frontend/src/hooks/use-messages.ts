@@ -1,5 +1,5 @@
-import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api';
 
 export interface Conversation {
   id: string;
@@ -29,9 +29,9 @@ export interface Message {
 
 export function useConversations() {
   return useQuery({
-    queryKey: ["conversations"],
+    queryKey: ['conversations'],
     queryFn: async () => {
-      const response = await api.get<{ data: Conversation[] }>("/conversations");
+      const response = await api.get<{ data: Conversation[] }>('/conversations');
       return response.data;
     },
   });
@@ -39,11 +39,11 @@ export function useConversations() {
 
 export function useMessages(conversationId: string) {
   return useInfiniteQuery({
-    queryKey: ["messages", conversationId],
+    queryKey: ['messages', conversationId],
     queryFn: async ({ pageParam }) => {
-      const cursorParam = pageParam ? `&cursor=${pageParam}` : "";
+      const cursorParam = pageParam ? `&cursor=${pageParam}` : '';
       const response = await api.get<{ data: { messages: Message[]; nextCursor?: string } }>(
-        `/conversations/${conversationId}/messages?limit=50${cursorParam}`
+        `/conversations/${conversationId}/messages?limit=50${cursorParam}`,
       );
       return response.data;
     },
@@ -57,12 +57,15 @@ export function useSendMessage(conversationId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (content: string) => {
-      const response = await api.post<{ data: Message }>(`/conversations/${conversationId}/messages`, { content });
+      const response = await api.post<{ data: Message }>(
+        `/conversations/${conversationId}/messages`,
+        { content },
+      );
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["messages", conversationId] });
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
 }
@@ -71,11 +74,11 @@ export function useStartConversation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (participantId: string) => {
-      const response = await api.post<{ data: Conversation }>("/conversations", { participantId });
+      const response = await api.post<{ data: Conversation }>('/conversations', { participantId });
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
 }
@@ -88,17 +91,17 @@ export function useMarkAsRead(conversationId: string) {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
-      queryClient.invalidateQueries({ queryKey: ["unreadCount", "messages"] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['unreadCount', 'messages'] });
     },
   });
 }
 
 export function useUnreadCount() {
   return useQuery({
-    queryKey: ["unreadCount", "messages"],
+    queryKey: ['unreadCount', 'messages'],
     queryFn: async () => {
-      const response = await api.get<{ data: { unreadCount: number } }>("/messages/unread-count");
+      const response = await api.get<{ data: { unreadCount: number } }>('/messages/unread-count');
       return response.data.unreadCount;
     },
     refetchInterval: 30000,

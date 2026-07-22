@@ -1,17 +1,17 @@
-import type { Request, Response } from "express";
+import type { Request, Response } from 'express';
 
-import { AppError } from "../errors/app-error";
-import { createSuccessResponse, createErrorResponse } from "../utils/api-response";
-import { createPostSchema, updatePostSchema, createCommentSchema } from "../schemas/post.schema";
-import * as postService from "../services/post.service";
+import { AppError } from '../errors/app-error';
+import { createSuccessResponse, createErrorResponse } from '../utils/api-response';
+import { createPostSchema, updatePostSchema, createCommentSchema } from '../schemas/post.schema';
+import * as postService from '../services/post.service';
 
 export async function createPost(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -19,16 +19,16 @@ export async function createPost(request: Request, response: Response): Promise<
   if (!validation.success) {
     response.status(400).json(
       createErrorResponse({
-        code: "VALIDATION_ERROR",
-        message: "Invalid input",
-        details: validation.error.flatten()
-      })
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid input',
+        details: validation.error.flatten(),
+      }),
     );
     return;
   }
 
   const post = await postService.createPost(userId, validation.data);
-  response.status(201).json(createSuccessResponse(post, "Post created"));
+  response.status(201).json(createSuccessResponse(post, 'Post created'));
 }
 
 export async function getPost(request: Request, response: Response): Promise<void> {
@@ -37,14 +37,14 @@ export async function getPost(request: Request, response: Response): Promise<voi
     : request.params.postId;
   if (!postId) {
     throw new AppError({
-      message: "Post ID is required",
+      message: 'Post ID is required',
       statusCode: 400,
-      code: "MISSING_POST_ID"
+      code: 'MISSING_POST_ID',
     });
   }
 
   const post = await postService.getPost(postId);
-  response.status(200).json(createSuccessResponse(post, "Post retrieved"));
+  response.status(200).json(createSuccessResponse(post, 'Post retrieved'));
 }
 
 export async function getFeed(request: Request, response: Response): Promise<void> {
@@ -53,7 +53,7 @@ export async function getFeed(request: Request, response: Response): Promise<voi
   const skip = Math.max(parseInt(request.query.skip as string) || 0, 0);
 
   const posts = await postService.getFeed(userId, limit, skip);
-  response.status(200).json(createSuccessResponse(posts, "Feed retrieved"));
+  response.status(200).json(createSuccessResponse(posts, 'Feed retrieved'));
 }
 
 export async function getUserPosts(request: Request, response: Response): Promise<void> {
@@ -62,9 +62,9 @@ export async function getUserPosts(request: Request, response: Response): Promis
     : request.params.userId;
   if (!userId) {
     throw new AppError({
-      message: "User ID is required",
+      message: 'User ID is required',
       statusCode: 400,
-      code: "MISSING_USER_ID"
+      code: 'MISSING_USER_ID',
     });
   }
 
@@ -72,16 +72,16 @@ export async function getUserPosts(request: Request, response: Response): Promis
   const skip = Math.max(parseInt(request.query.skip as string) || 0, 0);
 
   const posts = await postService.getUserPosts(userId, limit, skip);
-  response.status(200).json(createSuccessResponse(posts, "User posts retrieved"));
+  response.status(200).json(createSuccessResponse(posts, 'User posts retrieved'));
 }
 
 export async function updatePost(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -90,9 +90,9 @@ export async function updatePost(request: Request, response: Response): Promise<
     : request.params.postId;
   if (!postId) {
     throw new AppError({
-      message: "Post ID is required",
+      message: 'Post ID is required',
       statusCode: 400,
-      code: "MISSING_POST_ID"
+      code: 'MISSING_POST_ID',
     });
   }
 
@@ -100,25 +100,25 @@ export async function updatePost(request: Request, response: Response): Promise<
   if (!validation.success) {
     response.status(400).json(
       createErrorResponse({
-        code: "VALIDATION_ERROR",
-        message: "Invalid input",
-        details: validation.error.flatten()
-      })
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid input',
+        details: validation.error.flatten(),
+      }),
     );
     return;
   }
 
   const post = await postService.updatePost(userId, postId, validation.data);
-  response.status(200).json(createSuccessResponse(post, "Post updated"));
+  response.status(200).json(createSuccessResponse(post, 'Post updated'));
 }
 
 export async function deletePost(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -127,23 +127,23 @@ export async function deletePost(request: Request, response: Response): Promise<
     : request.params.postId;
   if (!postId) {
     throw new AppError({
-      message: "Post ID is required",
+      message: 'Post ID is required',
       statusCode: 400,
-      code: "MISSING_POST_ID"
+      code: 'MISSING_POST_ID',
     });
   }
 
   await postService.deletePost(userId, postId);
-  response.status(200).json(createSuccessResponse({ success: true }, "Post deleted"));
+  response.status(200).json(createSuccessResponse({ success: true }, 'Post deleted'));
 }
 
 export async function likePost(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -152,23 +152,23 @@ export async function likePost(request: Request, response: Response): Promise<vo
     : request.params.postId;
   if (!postId) {
     throw new AppError({
-      message: "Post ID is required",
+      message: 'Post ID is required',
       statusCode: 400,
-      code: "MISSING_POST_ID"
+      code: 'MISSING_POST_ID',
     });
   }
 
   await postService.likePost(userId, postId);
-  response.status(201).json(createSuccessResponse({ success: true }, "Post liked"));
+  response.status(201).json(createSuccessResponse({ success: true }, 'Post liked'));
 }
 
 export async function unlikePost(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -177,23 +177,23 @@ export async function unlikePost(request: Request, response: Response): Promise<
     : request.params.postId;
   if (!postId) {
     throw new AppError({
-      message: "Post ID is required",
+      message: 'Post ID is required',
       statusCode: 400,
-      code: "MISSING_POST_ID"
+      code: 'MISSING_POST_ID',
     });
   }
 
   await postService.unlikePost(userId, postId);
-  response.status(200).json(createSuccessResponse({ success: true }, "Post unliked"));
+  response.status(200).json(createSuccessResponse({ success: true }, 'Post unliked'));
 }
 
 export async function getPostLikeStatus(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -202,23 +202,23 @@ export async function getPostLikeStatus(request: Request, response: Response): P
     : request.params.postId;
   if (!postId) {
     throw new AppError({
-      message: "Post ID is required",
+      message: 'Post ID is required',
       statusCode: 400,
-      code: "MISSING_POST_ID"
+      code: 'MISSING_POST_ID',
     });
   }
 
   const status = await postService.getPostLikeStatus(userId, postId);
-  response.status(200).json(createSuccessResponse(status, "Like status retrieved"));
+  response.status(200).json(createSuccessResponse(status, 'Like status retrieved'));
 }
 
 export async function bookmarkPost(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -227,23 +227,23 @@ export async function bookmarkPost(request: Request, response: Response): Promis
     : request.params.postId;
   if (!postId) {
     throw new AppError({
-      message: "Post ID is required",
+      message: 'Post ID is required',
       statusCode: 400,
-      code: "MISSING_POST_ID"
+      code: 'MISSING_POST_ID',
     });
   }
 
   await postService.bookmarkPost(userId, postId);
-  response.status(201).json(createSuccessResponse({ success: true }, "Post bookmarked"));
+  response.status(201).json(createSuccessResponse({ success: true }, 'Post bookmarked'));
 }
 
 export async function unbookmarkPost(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -252,23 +252,23 @@ export async function unbookmarkPost(request: Request, response: Response): Prom
     : request.params.postId;
   if (!postId) {
     throw new AppError({
-      message: "Post ID is required",
+      message: 'Post ID is required',
       statusCode: 400,
-      code: "MISSING_POST_ID"
+      code: 'MISSING_POST_ID',
     });
   }
 
   await postService.unbookmarkPost(userId, postId);
-  response.status(200).json(createSuccessResponse({ success: true }, "Post unbookmarked"));
+  response.status(200).json(createSuccessResponse({ success: true }, 'Post unbookmarked'));
 }
 
 export async function getPostBookmarkStatus(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -277,23 +277,23 @@ export async function getPostBookmarkStatus(request: Request, response: Response
     : request.params.postId;
   if (!postId) {
     throw new AppError({
-      message: "Post ID is required",
+      message: 'Post ID is required',
       statusCode: 400,
-      code: "MISSING_POST_ID"
+      code: 'MISSING_POST_ID',
     });
   }
 
   const status = await postService.getPostBookmarkStatus(userId, postId);
-  response.status(200).json(createSuccessResponse(status, "Bookmark status retrieved"));
+  response.status(200).json(createSuccessResponse(status, 'Bookmark status retrieved'));
 }
 
 export async function createComment(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -302,9 +302,9 @@ export async function createComment(request: Request, response: Response): Promi
     : request.params.postId;
   if (!postId) {
     throw new AppError({
-      message: "Post ID is required",
+      message: 'Post ID is required',
       statusCode: 400,
-      code: "MISSING_POST_ID"
+      code: 'MISSING_POST_ID',
     });
   }
 
@@ -312,17 +312,17 @@ export async function createComment(request: Request, response: Response): Promi
   if (!validation.success) {
     response.status(400).json(
       createErrorResponse({
-        code: "VALIDATION_ERROR",
-        message: "Invalid input",
-        details: validation.error.flatten()
-      })
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid input',
+        details: validation.error.flatten(),
+      }),
     );
     return;
   }
 
   const replyToId = request.body.replyToId as string | undefined;
   const comment = await postService.createComment(userId, postId, validation.data, replyToId);
-  response.status(201).json(createSuccessResponse(comment, "Comment created"));
+  response.status(201).json(createSuccessResponse(comment, 'Comment created'));
 }
 
 export async function getPostComments(request: Request, response: Response): Promise<void> {
@@ -331,9 +331,9 @@ export async function getPostComments(request: Request, response: Response): Pro
     : request.params.postId;
   if (!postId) {
     throw new AppError({
-      message: "Post ID is required",
+      message: 'Post ID is required',
       statusCode: 400,
-      code: "MISSING_POST_ID"
+      code: 'MISSING_POST_ID',
     });
   }
 
@@ -341,16 +341,16 @@ export async function getPostComments(request: Request, response: Response): Pro
   const skip = Math.max(parseInt(request.query.skip as string) || 0, 0);
 
   const comments = await postService.getPostComments(postId, limit, skip);
-  response.status(200).json(createSuccessResponse(comments, "Comments retrieved"));
+  response.status(200).json(createSuccessResponse(comments, 'Comments retrieved'));
 }
 
 export async function deleteComment(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -359,23 +359,23 @@ export async function deleteComment(request: Request, response: Response): Promi
     : request.params.commentId;
   if (!commentId) {
     throw new AppError({
-      message: "Comment ID is required",
+      message: 'Comment ID is required',
       statusCode: 400,
-      code: "MISSING_COMMENT_ID"
+      code: 'MISSING_COMMENT_ID',
     });
   }
 
   await postService.deleteComment(userId, commentId);
-  response.status(200).json(createSuccessResponse({ success: true }, "Comment deleted"));
+  response.status(200).json(createSuccessResponse({ success: true }, 'Comment deleted'));
 }
 
 export async function likeComment(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -384,23 +384,23 @@ export async function likeComment(request: Request, response: Response): Promise
     : request.params.commentId;
   if (!commentId) {
     throw new AppError({
-      message: "Comment ID is required",
+      message: 'Comment ID is required',
       statusCode: 400,
-      code: "MISSING_COMMENT_ID"
+      code: 'MISSING_COMMENT_ID',
     });
   }
 
   await postService.likeComment(userId, commentId);
-  response.status(201).json(createSuccessResponse({ success: true }, "Comment liked"));
+  response.status(201).json(createSuccessResponse({ success: true }, 'Comment liked'));
 }
 
 export async function unlikeComment(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -409,23 +409,23 @@ export async function unlikeComment(request: Request, response: Response): Promi
     : request.params.commentId;
   if (!commentId) {
     throw new AppError({
-      message: "Comment ID is required",
+      message: 'Comment ID is required',
       statusCode: 400,
-      code: "MISSING_COMMENT_ID"
+      code: 'MISSING_COMMENT_ID',
     });
   }
 
   await postService.unlikeComment(userId, commentId);
-  response.status(200).json(createSuccessResponse({ success: true }, "Comment unliked"));
+  response.status(200).json(createSuccessResponse({ success: true }, 'Comment unliked'));
 }
 
 export async function getCommentLikeStatus(request: Request, response: Response): Promise<void> {
   const userId = request.user?.userId;
   if (!userId) {
     throw new AppError({
-      message: "User not authenticated",
+      message: 'User not authenticated',
       statusCode: 401,
-      code: "UNAUTHORIZED"
+      code: 'UNAUTHORIZED',
     });
   }
 
@@ -434,12 +434,12 @@ export async function getCommentLikeStatus(request: Request, response: Response)
     : request.params.commentId;
   if (!commentId) {
     throw new AppError({
-      message: "Comment ID is required",
+      message: 'Comment ID is required',
       statusCode: 400,
-      code: "MISSING_COMMENT_ID"
+      code: 'MISSING_COMMENT_ID',
     });
   }
 
   const status = await postService.getCommentLikeStatus(userId, commentId);
-  response.status(200).json(createSuccessResponse(status, "Like status retrieved"));
+  response.status(200).json(createSuccessResponse(status, 'Like status retrieved'));
 }

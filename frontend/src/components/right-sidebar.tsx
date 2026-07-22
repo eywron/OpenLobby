@@ -39,9 +39,15 @@ export function RightSidebar() {
       </Card>
 
       <footer className="px-4 text-xs text-muted-foreground flex flex-wrap gap-2">
-        <Link href="/about" className="hover:underline">About</Link>
-        <Link href="/terms" className="hover:underline">Terms</Link>
-        <Link href="/privacy" className="hover:underline">Privacy</Link>
+        <Link href="/about" className="hover:underline">
+          About
+        </Link>
+        <Link href="/terms" className="hover:underline">
+          Terms
+        </Link>
+        <Link href="/privacy" className="hover:underline">
+          Privacy
+        </Link>
         <span>&copy; {new Date().getFullYear()} OpenLobby</span>
       </footer>
     </aside>

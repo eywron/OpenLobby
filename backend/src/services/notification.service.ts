@@ -1,15 +1,12 @@
-import { AppError } from "../errors/app-error";
-import * as notificationRepository from "../repositories/notification.repository";
+import { AppError } from '../errors/app-error';
+import * as notificationRepository from '../repositories/notification.repository';
 import type {
   GetNotificationsQuery,
   MarkNotificationAsReadInput,
-  MarkAllNotificationsAsReadInput
-} from "../schemas/notification.schema";
+  MarkAllNotificationsAsReadInput,
+} from '../schemas/notification.schema';
 
-export async function getNotifications(
-  userId: string,
-  query: GetNotificationsQuery
-) {
+export async function getNotifications(userId: string, query: GetNotificationsQuery) {
   const repoOptions: {
     limit: number;
     skip: number;
@@ -18,7 +15,7 @@ export async function getNotifications(
   } = {
     limit: query.limit,
     skip: query.skip,
-    unreadOnly: query.unreadOnly
+    unreadOnly: query.unreadOnly,
   };
 
   if (query.type !== undefined) {
@@ -32,7 +29,7 @@ export async function getNotifications(
   return {
     notifications,
     total,
-    hasMore: query.skip + query.limit < total
+    hasMore: query.skip + query.limit < total,
   };
 }
 
@@ -45,27 +42,24 @@ export async function markAsRead(userId: string, input: MarkNotificationAsReadIn
 
   if (!notification) {
     throw new AppError({
-      message: "Notification not found",
+      message: 'Notification not found',
       statusCode: 404,
-      code: "NOTIFICATION_NOT_FOUND"
+      code: 'NOTIFICATION_NOT_FOUND',
     });
   }
 
   if (notification.recipientId !== userId) {
     throw new AppError({
-      message: "You can only mark your own notifications as read",
+      message: 'You can only mark your own notifications as read',
       statusCode: 403,
-      code: "FORBIDDEN"
+      code: 'FORBIDDEN',
     });
   }
 
   return notificationRepository.markNotificationAsRead(input.notificationId);
 }
 
-export async function markAllAsRead(
-  userId: string,
-  input: MarkAllNotificationsAsReadInput
-) {
+export async function markAllAsRead(userId: string, input: MarkAllNotificationsAsReadInput) {
   return notificationRepository.markAllNotificationsAsRead(userId, input.type);
 }
 
@@ -74,17 +68,17 @@ export async function deleteNotification(userId: string, notificationId: string)
 
   if (!notification) {
     throw new AppError({
-      message: "Notification not found",
+      message: 'Notification not found',
       statusCode: 404,
-      code: "NOTIFICATION_NOT_FOUND"
+      code: 'NOTIFICATION_NOT_FOUND',
     });
   }
 
   if (notification.recipientId !== userId) {
     throw new AppError({
-      message: "You can only delete your own notifications",
+      message: 'You can only delete your own notifications',
       statusCode: 403,
-      code: "FORBIDDEN"
+      code: 'FORBIDDEN',
     });
   }
 
@@ -98,10 +92,9 @@ export async function deleteAllNotifications(userId: string, type?: string) {
 export async function createNotification(data: {
   recipientId: string;
   actorId: string;
-  type: "LIKE" | "COMMENT" | "REPLY" | "FOLLOW" | "MENTION";
+  type: 'LIKE' | 'COMMENT' | 'REPLY' | 'FOLLOW' | 'MENTION';
   postId?: string;
   commentId?: string;
-  content?: string;
 }) {
   // Prevent self-notifications
   if (data.recipientId === data.actorId) {
@@ -114,16 +107,14 @@ export async function createNotification(data: {
     type: string;
     postId?: string;
     commentId?: string;
-    content?: string;
   } = {
     recipientId: data.recipientId,
     actorId: data.actorId,
-    type: data.type
+    type: data.type,
   };
 
   if (data.postId !== undefined) createData.postId = data.postId;
   if (data.commentId !== undefined) createData.commentId = data.commentId;
-  if (data.content !== undefined) createData.content = data.content;
 
   return notificationRepository.createNotification(createData);
 }

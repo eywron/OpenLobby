@@ -1,9 +1,9 @@
-import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api';
 
 export interface Notification {
   id: string;
-  type: "LIKE" | "COMMENT" | "FOLLOW" | "REPLY" | "MENTION";
+  type: 'LIKE' | 'COMMENT' | 'FOLLOW' | 'REPLY' | 'MENTION';
   actor: {
     id: string;
     username: string;
@@ -17,11 +17,11 @@ export interface Notification {
 
 export function useNotifications() {
   return useInfiniteQuery({
-    queryKey: ["notifications"],
+    queryKey: ['notifications'],
     queryFn: async ({ pageParam = 0 }) => {
-      const response = await api.get<{ data: { notifications: Notification[]; nextSkip?: number } }>(
-        `/notifications?limit=20&skip=${pageParam}`
-      );
+      const response = await api.get<{
+        data: { notifications: Notification[]; nextSkip?: number };
+      }>(`/notifications?limit=20&skip=${pageParam}`);
       return response.data;
     },
     initialPageParam: 0,
@@ -31,9 +31,11 @@ export function useNotifications() {
 
 export function useUnreadNotificationCount() {
   return useQuery({
-    queryKey: ["unreadCount", "notifications"],
+    queryKey: ['unreadCount', 'notifications'],
     queryFn: async () => {
-      const response = await api.get<{ data: { unreadCount: number } }>("/notifications/unread-count");
+      const response = await api.get<{ data: { unreadCount: number } }>(
+        '/notifications/unread-count',
+      );
       return response.data.unreadCount;
     },
     refetchInterval: 30000,
@@ -48,8 +50,8 @@ export function useMarkNotificationRead() {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      queryClient.invalidateQueries({ queryKey: ["unreadCount", "notifications"] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unreadCount', 'notifications'] });
     },
   });
 }
@@ -58,12 +60,12 @@ export function useMarkAllNotificationsRead() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      const response = await api.post<any>("/notifications/read-all", {});
+      const response = await api.post<any>('/notifications/read-all', {});
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      queryClient.invalidateQueries({ queryKey: ["unreadCount", "notifications"] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unreadCount', 'notifications'] });
     },
   });
 }
@@ -76,8 +78,8 @@ export function useDeleteNotification() {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      queryClient.invalidateQueries({ queryKey: ["unreadCount", "notifications"] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unreadCount', 'notifications'] });
     },
   });
 }

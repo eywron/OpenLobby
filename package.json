@@ -2,21 +2,25 @@
   "name": "openlobby",
   "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "frontend",
-    "backend"
-  ],
+  "packageManager": "pnpm@10.12.1",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
-    "lint": "npm run lint --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present",
-    "dev:backend": "npm run dev --workspace backend",
-    "dev:frontend": "npm run dev --workspace frontend"
+    "lint": "pnpm -r run lint",
+    "typecheck": "pnpm -r run typecheck",
+    "build": "pnpm -r run build",
+    "dev:backend": "pnpm --filter @openlobby/backend run dev",
+    "dev:frontend": "pnpm --filter @openlobby/frontend run dev",
+    "dev": "pnpm run dev:backend & pnpm run dev:frontend",
+    "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,yaml,yml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,md,yaml,yml}\""
   },
   "devDependencies": {
     "@eslint/js": "^9.31.0",
     "eslint": "^9.31.0",
     "globals": "^16.3.0",
+    "prettier": "^3.5.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.37.0"
   }

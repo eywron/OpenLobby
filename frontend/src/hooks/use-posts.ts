@@ -6,7 +6,9 @@ export const useFeed = (limit = 10) => {
   return useInfiniteQuery({
     queryKey: ['posts', 'feed'],
     queryFn: async ({ pageParam = 0 }) => {
-      const res = await api.get<ApiResponse<PaginatedResponse<Post>>>(`/posts/feed?limit=${limit}&skip=${pageParam}`);
+      const res = await api.get<ApiResponse<PaginatedResponse<Post>>>(
+        `/posts/feed?limit=${limit}&skip=${pageParam}`,
+      );
       return res.data;
     },
     getNextPageParam: (lastPage, allPages) => {
@@ -23,7 +25,9 @@ export const useUserPosts = (userId: string, limit = 10) => {
   return useInfiniteQuery({
     queryKey: ['posts', 'user', userId],
     queryFn: async ({ pageParam = 0 }) => {
-      const res = await api.get<ApiResponse<PaginatedResponse<Post>>>(`/posts/user/${userId}/posts?limit=${limit}&skip=${pageParam}`);
+      const res = await api.get<ApiResponse<PaginatedResponse<Post>>>(
+        `/posts/user/${userId}/posts?limit=${limit}&skip=${pageParam}`,
+      );
       return res.data;
     },
     getNextPageParam: (lastPage, allPages) => {
@@ -52,14 +56,19 @@ export const useCreatePost = () => {
   return useMutation({
     mutationFn: async (formData: FormData) => {
       // we need to use fetch directly or modify apiClient to handle FormData
-      const token = (await import('@/lib/api')).getAccessToken();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/posts`, {
-        method: 'POST',
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      const { auth } = await import('@/lib/firebase');
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) throw new Error('Not authenticated');
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/posts`,
+        {
+          method: 'POST',
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: formData,
         },
-        body: formData,
-      });
+      );
       if (!res.ok) {
         throw new Error('Failed to create post');
       }
@@ -89,7 +98,7 @@ export const useDeletePost = () => {
 
 export const useLikePost = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (postId: string) => {
       await api.post(`/posts/${postId}/like`);
@@ -103,7 +112,7 @@ export const useLikePost = () => {
 
 export const useUnlikePost = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (postId: string) => {
       await api.delete(`/posts/${postId}/like`);
@@ -127,7 +136,7 @@ export const useLikeStatus = (postId: string) => {
 
 export const useBookmarkPost = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (postId: string) => {
       await api.post(`/posts/${postId}/bookmark`);
@@ -140,7 +149,7 @@ export const useBookmarkPost = () => {
 
 export const useUnbookmarkPost = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (postId: string) => {
       await api.delete(`/posts/${postId}/bookmark`);
@@ -155,7 +164,9 @@ export const useBookmarkStatus = (postId: string) => {
   return useQuery({
     queryKey: ['bookmark-status', postId],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<{ isBookmarked: boolean }>>(`/posts/${postId}/bookmark-status`);
+      const res = await api.get<ApiResponse<{ isBookmarked: boolean }>>(
+        `/posts/${postId}/bookmark-status`,
+      );
       return res.data;
     },
   });

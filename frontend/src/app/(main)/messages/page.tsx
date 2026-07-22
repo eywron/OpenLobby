@@ -1,25 +1,31 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useRef } from "react";
-import { formatDistanceToNow } from "date-fns";
-import { PenSquare, Send, Search } from "lucide-react";
-import { useAuth } from "@/providers/auth-provider";
+import { useState, useEffect, useRef } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+import { PenSquare, Send, Search } from 'lucide-react';
+import { useAuth } from '@/providers/auth-provider';
 import {
   useConversations,
   useMessages,
   useSendMessage,
   useStartConversation,
   useMarkAsRead,
-} from "@/hooks/use-messages";
-import { useSearch } from "@/hooks/use-search";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+} from '@/hooks/use-messages';
+import { useSearch } from '@/hooks/use-search';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
 
 export default function MessagesPage() {
   const { user } = useAuth();
@@ -27,7 +33,7 @@ export default function MessagesPage() {
   const [isNewDialogOpenned, setIsNewDialogOpenned] = useState(false);
 
   const { data: conversations, isLoading: isLoadingConversations } = useConversations();
-  const markAsRead = useMarkAsRead(activeConversationId || "");
+  const markAsRead = useMarkAsRead(activeConversationId || '');
 
   useEffect(() => {
     if (activeConversationId) {
@@ -43,8 +49,8 @@ export default function MessagesPage() {
       {/* Left Panel: Conversation List */}
       <div
         className={cn(
-          "w-full md:w-1/3 flex-shrink-0 flex flex-col border-r border-border h-full",
-          activeConversationId ? "hidden md:flex" : "flex"
+          'w-full md:w-1/3 flex-shrink-0 flex flex-col border-r border-border h-full',
+          activeConversationId ? 'hidden md:flex' : 'flex',
         )}
       >
         <div className="flex items-center justify-between p-4 border-b border-border">
@@ -80,8 +86,8 @@ export default function MessagesPage() {
                   key={conv.id}
                   onClick={() => setActiveConversationId(conv.id)}
                   className={cn(
-                    "w-full p-4 border-b border-border flex items-center gap-3 hover:bg-secondary/50 transition-colors text-left",
-                    activeConversationId === conv.id ? "bg-secondary" : ""
+                    'w-full p-4 border-b border-border flex items-center gap-3 hover:bg-secondary/50 transition-colors text-left',
+                    activeConversationId === conv.id ? 'bg-secondary' : '',
                   )}
                 >
                   <Avatar className="w-12 h-12">
@@ -90,18 +96,24 @@ export default function MessagesPage() {
                   </Avatar>
                   <div className="flex-1 overflow-hidden">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="font-semibold text-foreground truncate">{other?.displayName}</span>
+                      <span className="font-semibold text-foreground truncate">
+                        {other?.displayName}
+                      </span>
                       {conv.lastMessage && (
                         <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
-                          {formatDistanceToNow(new Date(conv.lastMessage.createdAt), { addSuffix: true })}
+                          {formatDistanceToNow(new Date(conv.lastMessage.createdAt), {
+                            addSuffix: true,
+                          })}
                         </span>
                       )}
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground truncate flex-1">
-                        {conv.lastMessage?.content || "No messages yet"}
+                        {conv.lastMessage?.content || 'No messages yet'}
                       </span>
-                      {isUnread && <div className="w-2 h-2 rounded-full bg-destructive ml-2 flex-shrink-0" />}
+                      {isUnread && (
+                        <div className="w-2 h-2 rounded-full bg-destructive ml-2 flex-shrink-0" />
+                      )}
                     </div>
                   </div>
                 </button>
@@ -114,8 +126,8 @@ export default function MessagesPage() {
       {/* Right Panel: Chat View */}
       <div
         className={cn(
-          "flex-1 flex flex-col h-full bg-background",
-          !activeConversationId ? "hidden md:flex items-center justify-center" : "flex"
+          'flex-1 flex flex-col h-full bg-background',
+          !activeConversationId ? 'hidden md:flex items-center justify-center' : 'flex',
         )}
       >
         {!activeConversationId ? (
@@ -140,7 +152,7 @@ export default function MessagesPage() {
                 <div className="text-xs text-muted-foreground">@{otherParticipant?.username}</div>
               </div>
             </div>
-            
+
             <ChatMessages conversationId={activeConversationId} userId={user?.id} />
             <ChatInput conversationId={activeConversationId} />
           </>
@@ -150,8 +162,15 @@ export default function MessagesPage() {
   );
 }
 
-function ChatMessages({ conversationId, userId }: { conversationId: string; userId: string | undefined }) {
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useMessages(conversationId);
+function ChatMessages({
+  conversationId,
+  userId,
+}: {
+  conversationId: string;
+  userId: string | undefined;
+}) {
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useMessages(conversationId);
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -160,7 +179,7 @@ function ChatMessages({ conversationId, userId }: { conversationId: string; user
 
   useEffect(() => {
     if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+      bottomRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages.length]);
 
@@ -181,27 +200,31 @@ function ChatMessages({ conversationId, userId }: { conversationId: string; user
   }
 
   return (
-    <div 
+    <div
       className="flex-1 p-4 overflow-y-auto flex flex-col"
       onScroll={handleScroll}
       ref={scrollRef}
     >
-      {isFetchingNextPage && <div className="text-center text-xs text-muted-foreground my-2">Loading older...</div>}
+      {isFetchingNextPage && (
+        <div className="text-center text-xs text-muted-foreground my-2">Loading older...</div>
+      )}
       {messages.map((msg) => {
         const isMe = msg.senderId === userId;
         return (
           <div
             key={msg.id}
             className={cn(
-              "max-w-[75%] px-4 py-2 rounded-2xl mb-4 break-words",
-              isMe ? "bg-primary text-primary-foreground ml-auto" : "bg-secondary text-foreground mr-auto"
+              'max-w-[75%] px-4 py-2 rounded-2xl mb-4 break-words',
+              isMe
+                ? 'bg-primary text-primary-foreground ml-auto'
+                : 'bg-secondary text-foreground mr-auto',
             )}
           >
             <div>{msg.content}</div>
             <div
               className={cn(
-                "text-[10px] mt-1 text-right",
-                isMe ? "text-primary-foreground/70" : "text-muted-foreground"
+                'text-[10px] mt-1 text-right',
+                isMe ? 'text-primary-foreground/70' : 'text-muted-foreground',
               )}
             >
               {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
@@ -215,18 +238,18 @@ function ChatMessages({ conversationId, userId }: { conversationId: string; user
 }
 
 function ChatInput({ conversationId }: { conversationId: string }) {
-  const [text, setText] = useState("");
+  const [text, setText] = useState('');
   const sendMessage = useSendMessage(conversationId);
 
   const handleSend = () => {
     if (!text.trim() || sendMessage.isPending) return;
     sendMessage.mutate(text.trim(), {
-      onSuccess: () => setText(""),
+      onSuccess: () => setText(''),
     });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -254,31 +277,31 @@ function ChatInput({ conversationId }: { conversationId: string }) {
   );
 }
 
-function NewConversationDialog({ 
+function NewConversationDialog({
   onSelect,
   open,
-  onOpenChange
-}: { 
+  onOpenChange,
+}: {
   onSelect: (convId: string) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300);
     return () => clearTimeout(timer);
   }, [search]);
 
-  const { data, isLoading } = useSearch(debouncedSearch, "users");
+  const { data, isLoading } = useSearch(debouncedSearch, 'users');
   const startConversation = useStartConversation();
 
   const handleUserClick = (userId: string) => {
     startConversation.mutate(userId, {
       onSuccess: (data) => {
         onSelect(data.id);
-      }
+      },
     });
   };
 
@@ -329,7 +352,9 @@ function NewConversationDialog({
           ) : search.length > 0 ? (
             <div className="p-4 text-center text-sm text-muted-foreground">No users found</div>
           ) : (
-            <div className="p-4 text-center text-sm text-muted-foreground">Type to search for users</div>
+            <div className="p-4 text-center text-sm text-muted-foreground">
+              Type to search for users
+            </div>
           )}
         </ScrollArea>
       </DialogContent>

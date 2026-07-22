@@ -1,7 +1,7 @@
-import { env } from "../config/env";
+import { env } from '../config/env';
 
 export type HealthStatus = {
-  status: "ok";
+  status: 'ok';
   service: string;
   environment: string;
   uptimeSeconds: number;
@@ -10,10 +10,10 @@ export type HealthStatus = {
 
 export function getHealthStatus(): HealthStatus {
   return {
-    status: "ok",
-    service: "openlobby-backend",
+    status: 'ok',
+    service: 'openlobby-backend',
     environment: env.NODE_ENV,
     uptimeSeconds: Math.floor(process.uptime()),
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 }

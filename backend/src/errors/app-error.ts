@@ -12,9 +12,14 @@ export class AppError extends Error {
 
   public readonly details?: unknown;
 
-  constructor({ message, statusCode = 500, code = "INTERNAL_SERVER_ERROR", details }: AppErrorOptions) {
+  constructor({
+    message,
+    statusCode = 500,
+    code = 'INTERNAL_SERVER_ERROR',
+    details,
+  }: AppErrorOptions) {
     super(message);
-    this.name = "AppError";
+    this.name = 'AppError';
     this.statusCode = statusCode;
     this.code = code;
     this.details = details;

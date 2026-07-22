@@ -10,7 +10,7 @@ export function formatRelativeTime(date: string | Date): string {
   try {
     const parsedDate = typeof date === 'string' ? new Date(date) : date;
     const distance = formatDistanceToNow(parsedDate, { addSuffix: true });
-    
+
     // Convert to shorter format: "about 2 hours ago" -> "2h ago"
     return distance
       .replace('about ', '')
@@ -40,12 +40,12 @@ export function getInitials(name?: string): string {
   if (!name) return '?';
   const parts = name.split(' ').filter(Boolean);
   if (parts.length === 0) return '?';
-  
+
   const first = parts[0];
   const last = parts[parts.length - 1];
-  
+
   if (!first || !last) return '?';
-  
+
   if (parts.length === 1) return first.substring(0, 2).toUpperCase();
   return (first.charAt(0) + last.charAt(0)).toUpperCase();
 }

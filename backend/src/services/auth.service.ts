@@ -1,234 +1,63 @@
-import { createHash } from "crypto";
+import { randomBytes } from 'crypto';
+import * as authRepo from '../repositories/auth.repository.js';
+import { firebaseAuth } from '../config/firebase.js';
+import { AppError } from '../errors/app-error.js';
+import { prisma } from '../lib/prisma.js';
 
-import { AppError } from "../errors/app-error";
-import { hashPassword, verifyPassword } from "../utils/password";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-  generateRefreshTokenValue,
-  verifyRefreshToken
-} from "../utils/token";
-import * as authRepository from "../repositories/auth.repository";
-import type { RegisterInput, LoginInput, PasswordResetInput } from "../schemas/auth.schema";
-
-export async function registerUser(input: RegisterInput) {
-  const { username, displayName, email, password } = input;
-
-  const existingByUsername = await authRepository.findUserByUsername(username);
-  if (existingByUsername) {
-    throw new AppError({
-      message: "Username is already taken",
-      statusCode: 400,
-      code: "USERNAME_TAKEN"
-    });
+export const syncUser = async (
+  firebaseUser: {
+    uid: string;
+    email?: string;
+    displayName?: string;
+    photoURL?: string;
+    provider?: string;
+    emailVerified?: boolean;
+  },
+  usernameOverride?: string,
+) => {
+  const email = firebaseUser.email;
+  if (!email) {
+    throw new AppError({ statusCode: 400, message: 'Email is required from Firebase provider' });
   }
 
-  const existingByEmail = await authRepository.findUserByEmail(email);
-  if (existingByEmail) {
-    throw new AppError({
-      message: "Email is already registered",
-      statusCode: 400,
-      code: "EMAIL_TAKEN"
-    });
+  const existingUser = await authRepo.findUserByFirebaseUid(firebaseUser.uid);
+  let username = existingUser?.username;
+
+  if (!username) {
+    if (usernameOverride) {
+      const exists = await prisma.user.findUnique({ where: { username: usernameOverride } });
+      if (exists) throw new AppError({ statusCode: 409, message: 'Username already taken' });
+      username = usernameOverride;
+    } else {
+      const emailPrefix = (email.split('@')[0] || '').replace(/[^a-zA-Z0-9_]/g, '');
+      const suffix = randomBytes(2).toString('hex');
+      username = `${emailPrefix}_${suffix}`;
+    }
   }
 
-  const passwordHash = await hashPassword(password);
-
-  const user = await authRepository.createUser({
-    username,
-    displayName,
+  return authRepo.upsertUserByFirebaseUid({
+    firebaseUid: firebaseUser.uid,
     email,
-    passwordHash
+    displayName: firebaseUser.displayName || username,
+    username,
+    provider: firebaseUser.provider || 'email',
+    emailVerified: firebaseUser.emailVerified || false,
+    ...(firebaseUser.photoURL ? { avatarUrl: firebaseUser.photoURL } : {}),
   });
+};
 
-  return {
-    id: user.id,
-    username: user.username,
-    displayName: user.displayName,
-    email: user.email,
-    role: user.role
-  };
-}
-
-export async function loginUser(input: LoginInput) {
-  const { emailOrUsername, password, rememberMe } = input;
-
-  const user = await authRepository.findUserByEmail(emailOrUsername);
-  if (!user) {
-    const userByUsername = await authRepository.findUserByUsername(emailOrUsername);
-    if (!userByUsername) {
-      throw new AppError({
-        message: "Invalid email or username / password",
-        statusCode: 401,
-        code: "INVALID_CREDENTIALS"
-      });
-    }
-    throw new AppError({
-      message: "Invalid email or username / password",
-      statusCode: 401,
-      code: "INVALID_CREDENTIALS"
-    });
+export const deleteAccount = async (userId: string, firebaseUid: string) => {
+  await authRepo.deleteUser(userId);
+  try {
+    await firebaseAuth.deleteUser(firebaseUid);
+  } catch (error) {
+    // Log error but continue as we already deleted in PostgreSQL
+    console.error('Failed to delete user from Firebase Auth', error);
   }
+};
 
-  if (user.accountStatus !== "ACTIVE") {
-    throw new AppError({
-      message: "Account is not active",
-      statusCode: 403,
-      code: "ACCOUNT_INACTIVE"
-    });
-  }
-
-  const isPasswordValid = await verifyPassword(user.passwordHash, password);
-  if (!isPasswordValid) {
-    throw new AppError({
-      message: "Invalid email or username / password",
-      statusCode: 401,
-      code: "INVALID_CREDENTIALS"
-    });
-  }
-
-  const refreshTokenValue = generateRefreshTokenValue();
-  const refreshTokenHash = createHash("sha256").update(refreshTokenValue).digest("hex");
-
-  const expiresAtMs = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
-  const expiresAt = new Date(Date.now() + expiresAtMs);
-
-  const session = await authRepository.createSession({
-    userId: user.id,
-    refreshTokenHash,
-    expiresAt
-  });
-
-  const accessToken = generateAccessToken({
-    userId: user.id,
-    username: user.username,
-    role: user.role
-  });
-
-  const refreshToken = generateRefreshToken(
-    {
-      sessionId: session.id,
-      userId: user.id
-    },
-    rememberMe
-  );
-
-  return {
-    accessToken,
-    refreshToken,
-    refreshTokenValue,
-    sessionId: session.id,
-    user: {
-      id: user.id,
-      username: user.username,
-      displayName: user.displayName,
-      email: user.email,
-      role: user.role
-    }
-  };
-}
-
-export async function logoutUser(sessionId: string) {
-  await authRepository.deleteSession(sessionId);
-}
-
-export async function logoutAllUserSessions(userId: string) {
-  await authRepository.deleteAllUserSessions(userId);
-}
-
-export async function refreshAccessToken(refreshToken: string, refreshTokenValue: string) {
-  const payload = verifyRefreshToken(refreshToken);
-  if (!payload) {
-    throw new AppError({
-      message: "Invalid or expired refresh token",
-      statusCode: 401,
-      code: "INVALID_REFRESH_TOKEN"
-    });
-  }
-
-  const session = await authRepository.findSessionById(payload.sessionId);
-  if (!session || session.deletedAt) {
-    throw new AppError({
-      message: "Session not found or has been revoked",
-      statusCode: 401,
-      code: "SESSION_REVOKED"
-    });
-  }
-
-  const refreshTokenHash = createHash("sha256").update(refreshTokenValue).digest("hex");
-  if (session.refreshTokenHash !== refreshTokenHash) {
-    throw new AppError({
-      message: "Invalid refresh token",
-      statusCode: 401,
-      code: "INVALID_REFRESH_TOKEN"
-    });
-  }
-
-  const user = await authRepository.findUserById(payload.userId);
-  if (!user || user.accountStatus !== "ACTIVE") {
-    throw new AppError({
-      message: "User not found or account is inactive",
-      statusCode: 401,
-      code: "ACCOUNT_INACTIVE"
-    });
-  }
-
-  await authRepository.updateSessionActivity(session.id);
-
-  const newAccessToken = generateAccessToken({
-    userId: user.id,
-    username: user.username,
-    role: user.role
-  });
-
-  return {
-    accessToken: newAccessToken
-  };
-}
-
-export async function requestPasswordReset(email: string) {
-  const user = await authRepository.findUserByEmail(email);
-  if (!user) {
-    return { success: true };
-  }
-
-  const tokenValue = generateRefreshTokenValue();
-  const tokenHash = createHash("sha256").update(tokenValue).digest("hex");
-  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-
-  await authRepository.createPasswordResetToken({
-    userId: user.id,
-    tokenHash,
-    expiresAt
-  });
-
-  return {
-    success: true,
-    resetToken: tokenValue
-  };
-}
-
-export async function resetPassword(input: PasswordResetInput) {
-  const { token, password } = input;
-
-  const tokenHash = createHash("sha256").update(token).digest("hex");
-  const resetToken = await authRepository.findPasswordResetToken(tokenHash);
-
-  if (!resetToken) {
-    throw new AppError({
-      message: "Invalid or expired reset token",
-      statusCode: 400,
-      code: "INVALID_RESET_TOKEN"
-    });
-  }
-
-  const passwordHash = await hashPassword(password);
-
-  await authRepository.updateUserPassword(resetToken.userId, passwordHash);
-  await authRepository.markPasswordResetTokenAsUsed(resetToken.id);
-  await authRepository.deleteAllUserSessions(resetToken.userId);
-
-  return {
-    success: true
-  };
-}
+export const getUserProfile = async (userId: string) => {
+  const user = await authRepo.findUserById(userId);
+  if (!user) throw new AppError({ statusCode: 404, message: 'User not found' });
+  return user;
+};

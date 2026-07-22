@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, Suspense } from "react";
-import Link from "next/link";
-import { useBookmarks } from "@/hooks/use-bookmarks";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bookmark } from "lucide-react";
+import { useEffect, useRef, Suspense } from 'react';
+import Link from 'next/link';
+import { useBookmarks } from '@/hooks/use-bookmarks';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Bookmark } from 'lucide-react';
 
 // Simplified inline PostCard in case the main one isn't ready
 function SimplePostCard({ post }: { post: any }) {
@@ -32,7 +32,8 @@ function SimplePostCard({ post }: { post: any }) {
 }
 
 function BookmarksPageContent() {
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } = useBookmarks();
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } =
+    useBookmarks();
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,7 +44,7 @@ function BookmarksPageContent() {
           fetchNextPage();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
     observer.observe(loadMoreRef.current);
     return () => observer.disconnect();
@@ -88,9 +89,7 @@ function BookmarksPageContent() {
             <p className="text-sm">Save posts to read later.</p>
           </div>
         ) : (
-          bookmarks.map((post, idx) => (
-            <SimplePostCard key={post.id || idx} post={post} />
-          ))
+          bookmarks.map((post, idx) => <SimplePostCard key={post.id || idx} post={post} />)
         )}
 
         <div ref={loadMoreRef} className="h-10" />

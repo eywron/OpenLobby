@@ -14,7 +14,7 @@ import {
   Bookmark,
   User as UserIcon,
   Settings,
-  MoreHorizontal
+  MoreHorizontal,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -23,14 +23,14 @@ const container = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.05
-    }
-  }
+      staggerChildren: 0.05,
+    },
+  },
 };
 
 const item = {
   hidden: { opacity: 0, x: -10 },
-  show: { opacity: 1, x: 0 }
+  show: { opacity: 1, x: 0 },
 };
 
 export function Sidebar() {
@@ -50,7 +50,7 @@ export function Sidebar() {
   return (
     <aside className="hidden lg:flex w-64 flex-col justify-between border-r border-border h-[calc(100vh-3.5rem)] sticky top-14">
       <div className="p-4">
-        <motion.nav 
+        <motion.nav
           variants={container}
           initial="hidden"
           animate="show"
@@ -63,8 +63,8 @@ export function Sidebar() {
                 <Link
                   href={nav.href}
                   className={cn(
-                    "flex items-center gap-3 py-2 px-3 rounded-md transition-colors hover:bg-secondary/80 text-base",
-                    isActive ? "bg-secondary font-medium" : "text-muted-foreground"
+                    'flex items-center gap-3 py-2 px-3 rounded-md transition-colors hover:bg-secondary/80 text-base',
+                    isActive ? 'bg-secondary font-medium' : 'text-muted-foreground',
                   )}
                 >
                   <nav.icon className="h-5 w-5" />
@@ -78,7 +78,10 @@ export function Sidebar() {
 
       {user && (
         <div className="p-4">
-          <Button variant="ghost" className="w-full justify-between h-auto py-2 px-2 hover:bg-secondary/80">
+          <Button
+            variant="ghost"
+            className="w-full justify-between h-auto py-2 px-2 hover:bg-secondary/80"
+          >
             <div className="flex items-center gap-3 overflow-hidden">
               <Avatar className="h-10 w-10 shrink-0">
                 <AvatarImage src={user.avatarUrl} alt={user.displayName} />
@@ -86,7 +89,9 @@ export function Sidebar() {
               </Avatar>
               <div className="flex flex-col items-start truncate">
                 <span className="text-sm font-medium truncate w-full">{user.displayName}</span>
-                <span className="text-xs text-muted-foreground truncate w-full">@{user.username}</span>
+                <span className="text-xs text-muted-foreground truncate w-full">
+                  @{user.username}
+                </span>
               </div>
             </div>
             <MoreHorizontal className="h-5 w-5 shrink-0 text-muted-foreground" />

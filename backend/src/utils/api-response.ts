@@ -13,14 +13,17 @@ export type ApiErrorResponse = {
   };
 };
 
-export function createSuccessResponse<TData>(data: TData, message?: string): ApiSuccessResponse<TData> {
+export function createSuccessResponse<TData>(
+  data: TData,
+  message?: string,
+): ApiSuccessResponse<TData> {
   return message === undefined ? { success: true, data } : { success: true, message, data };
 }
 
 export function createErrorResponse({
   code,
   message,
-  details
+  details,
 }: {
   code: string;
   message: string;
@@ -28,6 +31,6 @@ export function createErrorResponse({
 }): ApiErrorResponse {
   return {
     success: false,
-    error: details === undefined ? { code, message } : { code, message, details }
+    error: details === undefined ? { code, message } : { code, message, details },
   };
 }

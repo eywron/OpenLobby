@@ -16,7 +16,7 @@ export function CreatePostForm() {
   const [files, setFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const createPost = useCreatePost();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,15 +27,15 @@ export function CreatePostForm() {
         return;
       }
       setFiles((prev) => [...prev, ...newFiles]);
-      
-      const newUrls = newFiles.map(file => URL.createObjectURL(file));
+
+      const newUrls = newFiles.map((file) => URL.createObjectURL(file));
       setPreviewUrls((prev) => [...prev, ...newUrls]);
     }
   };
 
   const removeFile = (index: number) => {
-    setFiles(prev => prev.filter((_, i) => i !== index));
-    setPreviewUrls(prev => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+    setPreviewUrls((prev) => {
       const url = prev[index];
       if (url) URL.revokeObjectURL(url);
       return prev.filter((_, i) => i !== index);
@@ -50,7 +50,7 @@ export function CreatePostForm() {
     if (content.trim()) {
       formData.append('textContent', content.trim());
     }
-    files.forEach(file => {
+    files.forEach((file) => {
       formData.append('images', file);
     });
 
@@ -70,9 +70,7 @@ export function CreatePostForm() {
       <form onSubmit={handleSubmit}>
         <div className="flex gap-4">
           <Avatar className="h-10 w-10 flex-shrink-0">
-            {user.avatarUrl ? (
-              <AvatarImage src={user.avatarUrl} alt={user.displayName} />
-            ) : null}
+            {user.avatarUrl ? <AvatarImage src={user.avatarUrl} alt={user.displayName} /> : null}
             <AvatarFallback>{getInitials(user.displayName || user.username || 'U')}</AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-3">
@@ -83,7 +81,7 @@ export function CreatePostForm() {
               maxLength={5000}
               className="min-h-[80px] resize-none border-none focus-visible:ring-0 p-0 text-base placeholder:text-muted-foreground shadow-none bg-transparent"
             />
-            
+
             {previewUrls.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {previewUrls.map((url, i) => (
@@ -100,7 +98,7 @@ export function CreatePostForm() {
                 ))}
               </div>
             )}
-            
+
             <div className="flex items-center justify-between pt-2 border-t border-border">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Button
@@ -121,12 +119,10 @@ export function CreatePostForm() {
                   multiple
                   onChange={handleFileChange}
                 />
-                <span className="text-xs">
-                  {content.length}/5000
-                </span>
+                <span className="text-xs">{content.length}/5000</span>
               </div>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={(!content.trim() && files.length === 0) || createPost.isPending}
                 size="sm"
                 className="rounded-full px-6 font-semibold"

@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { formatDistanceToNow } from "date-fns";
-import { Check, Heart, MessageSquare, UserPlus, CornerDownRight, AtSign } from "lucide-react";
+import { useEffect, useRef } from 'react';
+
+import { useRouter } from 'next/navigation';
+import { formatDistanceToNow } from 'date-fns';
+import { Check, Heart, MessageSquare, UserPlus, CornerDownRight, AtSign } from 'lucide-react';
 import {
   useNotifications,
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
-} from "@/hooks/use-notifications";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+} from '@/hooks/use-notifications';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 export default function NotificationsPage() {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useNotifications();
@@ -30,7 +30,7 @@ export default function NotificationsPage() {
           fetchNextPage();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
     observer.observe(loadMoreRef.current);
     return () => observer.disconnect();
@@ -42,9 +42,9 @@ export default function NotificationsPage() {
     if (!notification.isRead) {
       markRead.mutate(notification.id);
     }
-    
+
     // Navigate based on type
-    if (notification.type === "FOLLOW") {
+    if (notification.type === 'FOLLOW') {
       router.push(`/profile/${notification.actor.username}`);
     } else if (notification.targetId) {
       // Assuming posts are at /post/[id]
@@ -54,15 +54,15 @@ export default function NotificationsPage() {
 
   const getIcon = (type: string) => {
     switch (type) {
-      case "LIKE":
+      case 'LIKE':
         return <Heart className="w-4 h-4 text-muted-foreground" />;
-      case "COMMENT":
+      case 'COMMENT':
         return <MessageSquare className="w-4 h-4 text-muted-foreground" />;
-      case "FOLLOW":
+      case 'FOLLOW':
         return <UserPlus className="w-4 h-4 text-muted-foreground" />;
-      case "REPLY":
+      case 'REPLY':
         return <CornerDownRight className="w-4 h-4 text-muted-foreground" />;
-      case "MENTION":
+      case 'MENTION':
         return <AtSign className="w-4 h-4 text-muted-foreground" />;
       default:
         return null;
@@ -72,18 +72,42 @@ export default function NotificationsPage() {
   const getText = (notification: any) => {
     const actorName = notification.actor.displayName;
     switch (notification.type) {
-      case "LIKE":
-        return <span className="text-foreground"><span className="font-semibold">{actorName}</span> liked your post</span>;
-      case "COMMENT":
-        return <span className="text-foreground"><span className="font-semibold">{actorName}</span> commented on your post</span>;
-      case "FOLLOW":
-        return <span className="text-foreground"><span className="font-semibold">{actorName}</span> followed you</span>;
-      case "REPLY":
-        return <span className="text-foreground"><span className="font-semibold">{actorName}</span> replied to your comment</span>;
-      case "MENTION":
-        return <span className="text-foreground"><span className="font-semibold">{actorName}</span> mentioned you</span>;
+      case 'LIKE':
+        return (
+          <span className="text-foreground">
+            <span className="font-semibold">{actorName}</span> liked your post
+          </span>
+        );
+      case 'COMMENT':
+        return (
+          <span className="text-foreground">
+            <span className="font-semibold">{actorName}</span> commented on your post
+          </span>
+        );
+      case 'FOLLOW':
+        return (
+          <span className="text-foreground">
+            <span className="font-semibold">{actorName}</span> followed you
+          </span>
+        );
+      case 'REPLY':
+        return (
+          <span className="text-foreground">
+            <span className="font-semibold">{actorName}</span> replied to your comment
+          </span>
+        );
+      case 'MENTION':
+        return (
+          <span className="text-foreground">
+            <span className="font-semibold">{actorName}</span> mentioned you
+          </span>
+        );
       default:
-        return <span className="text-foreground"><span className="font-semibold">{actorName}</span> interacted with you</span>;
+        return (
+          <span className="text-foreground">
+            <span className="font-semibold">{actorName}</span> interacted with you
+          </span>
+        );
     }
   };
 
@@ -114,15 +138,17 @@ export default function NotificationsPage() {
             </div>
           ))
         ) : notifications.length === 0 ? (
-          <div className="p-12 text-center text-muted-foreground">All caught up! No notifications.</div>
+          <div className="p-12 text-center text-muted-foreground">
+            All caught up! No notifications.
+          </div>
         ) : (
           notifications.map((notification) => (
             <div
               key={notification.id}
               onClick={() => handleNotificationClick(notification)}
               className={cn(
-                "p-4 flex gap-4 items-start cursor-pointer transition-colors hover:bg-secondary/80",
-                !notification.isRead ? "bg-secondary/50" : "bg-transparent"
+                'p-4 flex gap-4 items-start cursor-pointer transition-colors hover:bg-secondary/80',
+                !notification.isRead ? 'bg-secondary/50' : 'bg-transparent',
               )}
             >
               <div className="mt-1">{getIcon(notification.type)}</div>
@@ -136,13 +162,11 @@ export default function NotificationsPage() {
                   {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                 </div>
               </div>
-              {!notification.isRead && (
-                <div className="w-2 h-2 rounded-full bg-destructive mt-2" />
-              )}
+              {!notification.isRead && <div className="w-2 h-2 rounded-full bg-destructive mt-2" />}
             </div>
           ))
         )}
-        
+
         {/* Load more trigger */}
         <div ref={loadMoreRef} className="h-10" />
         {isFetchingNextPage && (

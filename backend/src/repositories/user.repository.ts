@@ -1,4 +1,4 @@
-import { prisma } from "../lib/prisma";
+import { prisma } from '../lib/prisma';
 
 export async function getUserProfile(userId: string) {
   return prisma.user.findUnique({
@@ -18,10 +18,10 @@ export async function getUserProfile(userId: string) {
         select: {
           posts: true,
           followers: true,
-          following: true
-        }
-      }
-    }
+          following: true,
+        },
+      },
+    },
   });
 }
 
@@ -39,13 +39,13 @@ export async function getPublicProfile(username: string) {
       _count: {
         select: {
           posts: {
-            where: { deletedAt: null, visibility: "PUBLIC" }
+            where: { deletedAt: null, visibility: 'PUBLIC' },
           },
           followers: true,
-          following: true
-        }
-      }
-    }
+          following: true,
+        },
+      },
+    },
   });
 }
 
@@ -56,7 +56,7 @@ export async function updateUserProfile(
     bio?: string | null;
     avatarUrl?: string | null;
     bannerUrl?: string | null;
-  }
+  },
 ) {
   return prisma.user.update({
     where: { id: userId },
@@ -76,16 +76,16 @@ export async function updateUserProfile(
         select: {
           posts: true,
           followers: true,
-          following: true
-        }
-      }
-    }
+          following: true,
+        },
+      },
+    },
   });
 }
 
 export async function getUserSettings(userId: string) {
   return prisma.userSettings.findUnique({
-    where: { userId }
+    where: { userId },
   });
 }
 
@@ -96,11 +96,11 @@ export async function updateUserSettings(
     pushNotifications?: boolean;
     directMessageNotifications?: boolean;
     privacyProfilePublic?: boolean;
-  }
+  },
 ) {
   return prisma.userSettings.update({
     where: { userId },
-    data
+    data,
   });
 }
 
@@ -108,8 +108,8 @@ export async function followUser(followerId: string, followingId: string) {
   return prisma.follow.create({
     data: {
       followerId,
-      followingId
-    }
+      followingId,
+    },
   });
 }
 
@@ -117,8 +117,8 @@ export async function unfollowUser(followerId: string, followingId: string) {
   return prisma.follow.deleteMany({
     where: {
       followerId,
-      followingId
-    }
+      followingId,
+    },
   });
 }
 
@@ -127,9 +127,9 @@ export async function checkFollowStatus(followerId: string, followingId: string)
     where: {
       followerId_followingId: {
         followerId,
-        followingId
-      }
-    }
+        followingId,
+      },
+    },
   });
 }
 
@@ -143,13 +143,13 @@ export async function getFollowers(userId: string, limit: number = 20, skip: num
           username: true,
           displayName: true,
           avatarUrl: true,
-          bio: true
-        }
-      }
+          bio: true,
+        },
+      },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
     take: limit,
-    skip
+    skip,
   });
 }
 
@@ -163,24 +163,24 @@ export async function getFollowing(userId: string, limit: number = 20, skip: num
           username: true,
           displayName: true,
           avatarUrl: true,
-          bio: true
-        }
-      }
+          bio: true,
+        },
+      },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
     take: limit,
-    skip
+    skip,
   });
 }
 
 export async function getFollowerCount(userId: string) {
   return prisma.follow.count({
-    where: { followingId: userId }
+    where: { followingId: userId },
   });
 }
 
 export async function getFollowingCount(userId: string) {
   return prisma.follow.count({
-    where: { followerId: userId }
+    where: { followerId: userId },
   });
 }

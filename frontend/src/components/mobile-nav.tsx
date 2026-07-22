@@ -28,8 +28,8 @@ export function MobileNav() {
               key={item.name}
               href={item.href}
               className={cn(
-                "flex h-full w-full flex-col items-center justify-center space-y-1 transition-colors",
-                isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                'flex h-full w-full flex-col items-center justify-center space-y-1 transition-colors',
+                isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
               )}
             >
               <item.icon className="h-6 w-6" />

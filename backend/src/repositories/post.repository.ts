@@ -1,25 +1,31 @@
-import { prisma } from "../lib/prisma";
+import { prisma } from '../lib/prisma';
 
 export async function createPost(
   authorId: string,
   data: {
     content: string;
     visibility: string;
-    images?: Array<{ url: string; alt?: string }>;
-  }
+    images?: Array<{ url: string; thumbnailUrl: string; width: number; height: number; }>;
+  },
 ) {
   return prisma.post.create({
     data: {
-      content: data.content,
-      visibility: data.visibility as "PUBLIC" | "FOLLOWERS" | "PRIVATE",
+      textContent: data.content,
+      visibility: data.visibility as 'PUBLIC' | 'FOLLOWERS' | 'PRIVATE',
       authorId,
       images: data.images
         ? {
             createMany: {
-              data: data.images
-            }
+              data: data.images.map((img, i) => ({
+                storageUrl: img.url,
+                thumbnailUrl: img.thumbnailUrl,
+                width: img.width,
+                height: img.height,
+                displayOrder: i,
+              })),
+            },
           }
-        : undefined
+        : undefined,
     },
     include: {
       author: {
@@ -27,18 +33,18 @@ export async function createPost(
           id: true,
           username: true,
           displayName: true,
-          avatarUrl: true
-        }
+          avatarUrl: true,
+        },
       },
       images: true,
       _count: {
         select: {
           likes: true,
           comments: true,
-          bookmarks: true
-        }
-      }
-    }
+          bookmarks: true,
+        },
+      },
+    },
   });
 }
 
@@ -51,18 +57,18 @@ export async function getPostById(postId: string) {
           id: true,
           username: true,
           displayName: true,
-          avatarUrl: true
-        }
+          avatarUrl: true,
+        },
       },
       images: true,
       _count: {
         select: {
           likes: true,
           comments: true,
-          bookmarks: true
-        }
-      }
-    }
+          bookmarks: true,
+        },
+      },
+    },
   });
 }
 
@@ -70,9 +76,9 @@ export async function getPostsFeed(userId: string | null, limit: number = 20, sk
   const whereCondition: {
     deletedAt: null;
     OR?: Array<{ [key: string]: unknown }>;
-    visibility?: string;
+    visibility?: 'PUBLIC' | 'FOLLOWERS' | 'PRIVATE';
   } = {
-    deletedAt: null
+    deletedAt: null,
   };
 
   if (userId) {
@@ -83,16 +89,16 @@ export async function getPostsFeed(userId: string | null, limit: number = 20, sk
         author: {
           followers: {
             some: {
-              followerId: userId
-            }
-          }
-        }
+              followerId: userId,
+            },
+          },
+        },
       },
-      { visibility: "PUBLIC" }
+      { visibility: 'PUBLIC' },
     ];
   } else {
     // Anonymous users see only public posts
-    whereCondition.visibility = "PUBLIC";
+    whereCondition.visibility = 'PUBLIC';
   }
 
   return prisma.post.findMany({
@@ -103,21 +109,21 @@ export async function getPostsFeed(userId: string | null, limit: number = 20, sk
           id: true,
           username: true,
           displayName: true,
-          avatarUrl: true
-        }
+          avatarUrl: true,
+        },
       },
       images: true,
       _count: {
         select: {
           likes: true,
           comments: true,
-          bookmarks: true
-        }
-      }
+          bookmarks: true,
+        },
+      },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
     take: limit,
-    skip
+    skip,
   });
 }
 
@@ -125,7 +131,7 @@ export async function getUserPosts(userId: string, limit: number = 20, skip: num
   return prisma.post.findMany({
     where: {
       authorId: userId,
-      deletedAt: null
+      deletedAt: null,
     },
     include: {
       author: {
@@ -133,21 +139,21 @@ export async function getUserPosts(userId: string, limit: number = 20, skip: num
           id: true,
           username: true,
           displayName: true,
-          avatarUrl: true
-        }
+          avatarUrl: true,
+        },
       },
       images: true,
       _count: {
         select: {
           likes: true,
           comments: true,
-          bookmarks: true
-        }
-      }
+          bookmarks: true,
+        },
+      },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
     take: limit,
-    skip
+    skip,
   });
 }
 
@@ -156,16 +162,16 @@ export async function updatePost(
   data: {
     content?: string;
     visibility?: string;
-  }
+  },
 ) {
   const updateData: {
-    content?: string;
-    visibility?: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+    textContent?: string;
+    visibility?: 'PUBLIC' | 'FOLLOWERS' | 'PRIVATE';
   } = {};
 
-  if (data.content !== undefined) updateData.content = data.content;
+  if (data.content !== undefined) updateData.textContent = data.content;
   if (data.visibility !== undefined) {
-    updateData.visibility = data.visibility as "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+    updateData.visibility = data.visibility as 'PUBLIC' | 'FOLLOWERS' | 'PRIVATE';
   }
 
   return prisma.post.update({
@@ -177,25 +183,25 @@ export async function updatePost(
           id: true,
           username: true,
           displayName: true,
-          avatarUrl: true
-        }
+          avatarUrl: true,
+        },
       },
       images: true,
       _count: {
         select: {
           likes: true,
           comments: true,
-          bookmarks: true
-        }
-      }
-    }
+          bookmarks: true,
+        },
+      },
+    },
   });
 }
 
 export async function deletePost(postId: string) {
   return prisma.post.update({
     where: { id: postId },
-    data: { deletedAt: new Date() }
+    data: { deletedAt: new Date() },
   });
 }
 
@@ -203,8 +209,8 @@ export async function likePost(postId: string, userId: string) {
   return prisma.postLike.create({
     data: {
       postId,
-      userId
-    }
+      userId,
+    },
   });
 }
 
@@ -212,8 +218,8 @@ export async function unlikePost(postId: string, userId: string) {
   return prisma.postLike.deleteMany({
     where: {
       postId,
-      userId
-    }
+      userId,
+    },
   });
 }
 
@@ -222,9 +228,9 @@ export async function checkPostLike(postId: string, userId: string) {
     where: {
       postId_userId: {
         postId,
-        userId
-      }
-    }
+        userId,
+      },
+    },
   });
 }
 
@@ -232,8 +238,8 @@ export async function bookmarkPost(postId: string, userId: string) {
   return prisma.bookmark.create({
     data: {
       postId,
-      userId
-    }
+      userId,
+    },
   });
 }
 
@@ -241,19 +247,19 @@ export async function unbookmarkPost(postId: string, userId: string) {
   return prisma.bookmark.deleteMany({
     where: {
       postId,
-      userId
-    }
+      userId,
+    },
   });
 }
 
 export async function checkPostBookmark(postId: string, userId: string) {
   return prisma.bookmark.findUnique({
     where: {
-      postId_userId: {
+      userId_postId: {
         postId,
-        userId
-      }
-    }
+        userId,
+      },
+    },
   });
 }
 
@@ -261,14 +267,14 @@ export async function createComment(
   postId: string,
   authorId: string,
   content: string,
-  replyToId?: string
+  replyToId?: string,
 ) {
   return prisma.comment.create({
     data: {
-      content,
+      textContent: content,
       postId,
       authorId,
-      replyToId
+      parentId: replyToId,
     },
     include: {
       author: {
@@ -276,16 +282,16 @@ export async function createComment(
           id: true,
           username: true,
           displayName: true,
-          avatarUrl: true
-        }
+          avatarUrl: true,
+        },
       },
       _count: {
         select: {
           likes: true,
-          replies: true
-        }
-      }
-    }
+          replies: true,
+        },
+      },
+    },
   });
 }
 
@@ -294,7 +300,7 @@ export async function getPostComments(postId: string, limit: number = 20, skip: 
     where: {
       postId,
       deletedAt: null,
-      replyToId: null
+      parentId: null,
     },
     include: {
       author: {
@@ -302,8 +308,8 @@ export async function getPostComments(postId: string, limit: number = 20, skip: 
           id: true,
           username: true,
           displayName: true,
-          avatarUrl: true
-        }
+          avatarUrl: true,
+        },
       },
       replies: {
         include: {
@@ -312,35 +318,35 @@ export async function getPostComments(postId: string, limit: number = 20, skip: 
               id: true,
               username: true,
               displayName: true,
-              avatarUrl: true
-            }
+              avatarUrl: true,
+            },
           },
           _count: {
             select: {
-              likes: true
-            }
-          }
+              likes: true,
+            },
+          },
         },
         where: { deletedAt: null },
-        orderBy: { createdAt: "asc" }
+        orderBy: { createdAt: 'asc' },
       },
       _count: {
         select: {
           likes: true,
-          replies: true
-        }
-      }
+          replies: true,
+        },
+      },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
     take: limit,
-    skip
+    skip,
   });
 }
 
 export async function deleteComment(commentId: string) {
   return prisma.comment.update({
     where: { id: commentId },
-    data: { deletedAt: new Date() }
+    data: { deletedAt: new Date() },
   });
 }
 
@@ -348,8 +354,8 @@ export async function likeComment(commentId: string, userId: string) {
   return prisma.commentLike.create({
     data: {
       commentId,
-      userId
-    }
+      userId,
+    },
   });
 }
 
@@ -357,8 +363,8 @@ export async function unlikeComment(commentId: string, userId: string) {
   return prisma.commentLike.deleteMany({
     where: {
       commentId,
-      userId
-    }
+      userId,
+    },
   });
 }
 
@@ -367,8 +373,8 @@ export async function checkCommentLike(commentId: string, userId: string) {
     where: {
       commentId_userId: {
         commentId,
-        userId
-      }
-    }
+        userId,
+      },
+    },
   });
 }

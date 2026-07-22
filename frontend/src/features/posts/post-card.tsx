@@ -16,7 +16,15 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/providers/auth-provider';
-import { useLikePost, useUnlikePost, useLikeStatus, useBookmarkPost, useUnbookmarkPost, useBookmarkStatus, useDeletePost } from '@/hooks/use-posts';
+import {
+  useLikePost,
+  useUnlikePost,
+  useLikeStatus,
+  useBookmarkPost,
+  useUnbookmarkPost,
+  useBookmarkStatus,
+  useDeletePost,
+} from '@/hooks/use-posts';
 
 interface PostCardProps {
   post: Post;
@@ -25,11 +33,11 @@ interface PostCardProps {
 
 export function PostCard({ post, showActions = true }: PostCardProps) {
   const { user } = useAuth();
-  const toast = ({title}: any) => alert(title);
-  
+  const toast = ({ title }: any) => alert(title);
+
   const { data: likeStatus } = useLikeStatus(post.id);
   const { data: bookmarkStatus } = useBookmarkStatus(post.id);
-  
+
   const likeMutation = useLikePost();
   const unlikeMutation = useUnlikePost();
   const bookmarkMutation = useBookmarkPost();
@@ -63,7 +71,7 @@ export function PostCard({ post, showActions = true }: PostCardProps) {
       if (typeof toast === 'function') {
         toast({ title: 'Link copied to clipboard' });
       }
-    } catch (err) {}
+    } catch (err) { console.error(err);}
   };
 
   const handleDelete = () => {
@@ -92,15 +100,23 @@ export function PostCard({ post, showActions = true }: PostCardProps) {
               {post.author.avatarUrl ? (
                 <AvatarImage src={post.author.avatarUrl} alt={post.author.displayName} />
               ) : null}
-              <AvatarFallback>{getInitials(post.author.displayName || post.author.username)}</AvatarFallback>
+              <AvatarFallback>
+                {getInitials(post.author.displayName || post.author.username)}
+              </AvatarFallback>
             </Avatar>
           </Link>
           <div className="flex flex-col">
             <div className="flex items-center space-x-2">
-              <Link href={`/profile/${post.author.username}`} className="font-semibold hover:underline">
+              <Link
+                href={`/profile/${post.author.username}`}
+                className="font-semibold hover:underline"
+              >
                 {post.author.displayName}
               </Link>
-              <Link href={`/profile/${post.author.username}`} className="text-muted-foreground text-sm">
+              <Link
+                href={`/profile/${post.author.username}`}
+                className="text-muted-foreground text-sm"
+              >
                 @{post.author.username}
               </Link>
               <span className="text-muted-foreground text-sm">·</span>
@@ -120,7 +136,10 @@ export function PostCard({ post, showActions = true }: PostCardProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
+              <DropdownMenuItem
+                onClick={handleDelete}
+                className="text-destructive focus:text-destructive"
+              >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete post
               </DropdownMenuItem>
@@ -139,7 +158,13 @@ export function PostCard({ post, showActions = true }: PostCardProps) {
         {post.images && post.images.length > 0 && (
           <div className={cn('grid gap-2 mb-3', getImageGridClass(post.images.length))}>
             {post.images.map((image, index) => (
-              <div key={image.id} className={cn('relative rounded-xl overflow-hidden', post.images.length === 1 ? 'aspect-video' : 'aspect-square')}>
+              <div
+                key={image.id}
+                className={cn(
+                  'relative rounded-xl overflow-hidden',
+                  post.images.length === 1 ? 'aspect-video' : 'aspect-square',
+                )}
+              >
                 <Image
                   src={image.storageUrl}
                   alt={`Post image ${index + 1}`}
@@ -159,23 +184,23 @@ export function PostCard({ post, showActions = true }: PostCardProps) {
             <span>{formatCount(post._count.comments)}</span>
           </Button>
 
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={handleLike}
-            className={cn("space-x-2", isLiked && "text-foreground")}
+            className={cn('space-x-2', isLiked && 'text-foreground')}
           >
-            <Heart className={cn("h-4 w-4", isLiked && "fill-foreground")} />
+            <Heart className={cn('h-4 w-4', isLiked && 'fill-foreground')} />
             <span>{formatCount(likesCount)}</span>
           </Button>
 
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="sm"
             onClick={handleBookmark}
-            className={isBookmarked ? "text-foreground" : ""}
+            className={isBookmarked ? 'text-foreground' : ''}
           >
-            <Bookmark className={cn("h-4 w-4", isBookmarked && "fill-foreground")} />
+            <Bookmark className={cn('h-4 w-4', isBookmarked && 'fill-foreground')} />
           </Button>
 
           <Button variant="ghost" size="sm" onClick={handleShare}>

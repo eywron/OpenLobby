@@ -1,4 +1,4 @@
-import { prisma } from "../lib/prisma";
+import { prisma } from '../lib/prisma';
 
 export async function getNotifications(
   userId: string,
@@ -7,14 +7,14 @@ export async function getNotifications(
     skip: number;
     type?: string;
     unreadOnly: boolean;
-  }
+  },
 ) {
   const where: {
     recipientId: string;
     readAt?: null;
-    type?: string;
+    type?: 'LIKE' | 'COMMENT' | 'REPLY' | 'FOLLOW' | 'MENTION';
   } = {
-    recipientId: userId
+    recipientId: userId,
   };
 
   if (options.unreadOnly) {
@@ -22,7 +22,7 @@ export async function getNotifications(
   }
 
   if (options.type) {
-    where.type = options.type;
+    where.type = options.type as any;
   }
 
   return prisma.notification.findMany({
@@ -33,13 +33,13 @@ export async function getNotifications(
           id: true,
           username: true,
           displayName: true,
-          avatarUrl: true
-        }
-      }
+          avatarUrl: true,
+        },
+      },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
     take: options.limit,
-    skip: options.skip
+    skip: options.skip,
   });
 }
 
@@ -48,8 +48,8 @@ export async function getUnreadCount(userId: string, type?: string) {
     where: {
       recipientId: userId,
       readAt: null,
-      ...(type && { type })
-    }
+      ...(type && { type: type as any }),
+    },
   });
 }
 
@@ -63,10 +63,10 @@ export async function markNotificationAsRead(notificationId: string) {
           id: true,
           username: true,
           displayName: true,
-          avatarUrl: true
-        }
-      }
-    }
+          avatarUrl: true,
+        },
+      },
+    },
   });
 }
 
@@ -75,15 +75,15 @@ export async function markAllNotificationsAsRead(userId: string, type?: string) 
     where: {
       recipientId: userId,
       readAt: null,
-      ...(type && { type })
+      ...(type && { type: type as any }),
     },
-    data: { readAt: new Date() }
+    data: { readAt: new Date() },
   });
 }
 
 export async function deleteNotification(notificationId: string) {
   return prisma.notification.delete({
-    where: { id: notificationId }
+    where: { id: notificationId },
   });
 }
 
@@ -91,8 +91,8 @@ export async function deleteAllNotifications(userId: string, type?: string) {
   return prisma.notification.deleteMany({
     where: {
       recipientId: userId,
-      ...(type && { type })
-    }
+      ...(type && { type: type as any }),
+    },
   });
 }
 
@@ -107,11 +107,10 @@ export async function createNotification(data: {
   return prisma.notification.create({
     data: {
       recipientId: data.recipientId,
-      actorId: data.actorId,
-      type: data.type as "LIKE" | "COMMENT" | "REPLY" | "FOLLOW" | "MENTION",
+      actorUserId: data.actorId,
+      type: data.type as 'LIKE' | 'COMMENT' | 'REPLY' | 'FOLLOW' | 'MENTION',
       postId: data.postId,
       commentId: data.commentId,
-      content: data.content
     },
     include: {
       actor: {
@@ -119,10 +118,10 @@ export async function createNotification(data: {
           id: true,
           username: true,
           displayName: true,
-          avatarUrl: true
-        }
-      }
-    }
+          avatarUrl: true,
+        },
+      },
+    },
   });
 }
 
@@ -135,9 +134,9 @@ export async function getNotificationById(notificationId: string) {
           id: true,
           username: true,
           displayName: true,
-          avatarUrl: true
-        }
-      }
-    }
+          avatarUrl: true,
+        },
+      },
+    },
   });
 }
